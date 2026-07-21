@@ -1,0 +1,21 @@
+[worldserver]
+
+# Enable the LivingWorld simulation layer.
+# Default: 1
+LivingWorld.Enable = 1
+
+# Create profiles for real human-controlled characters as well as Playerbots.
+# Keep disabled for the production simulation so only AI citizens receive profiles.
+# Default: 0
+LivingWorld.ProfileHumans = 0
+
+# How often an online character is checked for Playerbot registration and a
+# persistent LivingWorld profile. A delay is intentional because Playerbot AI
+# registration may complete after the normal player login hook.
+# Default: 5000
+LivingWorld.ProfileCheckIntervalMs = 5000
+
+# Maximum number of non-protected short-term memories retained per bot.
+# Memory pruning will be implemented after the identity foundation is stable.
+# Default: 50
+LivingWorld.MemoryLimit = 50
