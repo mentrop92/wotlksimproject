@@ -1,0 +1,77 @@
+name: LivingWorld combined build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/livingworld-phase-0-1
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Ubuntu 24.04 / GCC
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout Playerbot core fork
+        uses: actions/checkout@v4
+
+      - name: Checkout Playerbots module fork
+        uses: actions/checkout@v4
+        with:
+          repository: mentrop92/mod-playerbots
+          ref: master
+          path: modules/mod-playerbots
+
+      - name: Install build requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ccache \
+            cmake \
+            g++ \
+            gcc \
+            git \
+            libboost-all-dev \
+            libbz2-dev \
+            libmysqlclient-dev \
+            libncurses-dev \
+            libreadline-dev \
+            libssl-dev \
+            make \
+            mysql-server
+
+      - name: Configure ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: livingworld-ubuntu-24.04
+          max-size: 2G
+
+      - name: Configure AzerothCore
+        run: |
+          cmake \
+            -S "${GITHUB_WORKSPACE}" \
+            -B "${GITHUB_WORKSPACE}/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build AzerothCore with Playerbots and LivingWorld
+        run: |
+          cmake --build "${GITHUB_WORKSPACE}/build" --config Release --parallel 2
+
+      - name: Confirm LivingWorld module was configured
+        run: |
+          test -f modules/mod-livingworld/src/LW_loader.cpp
+          test -f modules/mod-livingworld/data/sql/db-characters/livingworld_base.sql
+          grep -R "Addmod_livingworldScripts" build modules -n
