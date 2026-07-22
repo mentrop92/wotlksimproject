@@ -28,11 +28,12 @@ LivingWorld.ProfileCheckIntervalMs = 5000
 LivingWorld.ProfileDetectionTimeoutMs = 60000
 
 # Initial online population policy used only when no persisted settings row exists.
-# These values define the controller contract; automatic login/logout behavior is
-# implemented in the scheduling phase.
+# The tolerance creates a no-action band around the target so small fluctuations
+# do not cause constant login/logout churn.
 LivingWorld.Population.MinimumOnline = 50
 LivingWorld.Population.MaximumOnline = 500
 LivingWorld.Population.TargetOnline = 250
+LivingWorld.Population.Tolerance = 15
 LivingWorld.Population.AutoScale = 1
 LivingWorld.Population.LoginRatePerMinute = 15
 LivingWorld.Population.LogoutRatePerMinute = 20
