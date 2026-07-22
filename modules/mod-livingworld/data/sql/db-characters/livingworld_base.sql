@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS `lw_world_settings` (
   PRIMARY KEY (`settings_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT IGNORE INTO `lw_world_settings` (`settings_id`) VALUES (1);
-
 CREATE TABLE IF NOT EXISTS `lw_profiles` (
   `character_guid` INT UNSIGNED NOT NULL,
   `seed` BIGINT UNSIGNED NOT NULL,
