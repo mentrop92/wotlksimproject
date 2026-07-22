@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - agent/livingworld-phase-0-1
+      - agent/livingworld-profile-persistence
   pull_request:
     branches:
       - Playerbot
@@ -50,6 +51,17 @@ jobs:
             libssl-dev \
             make \
             mysql-server
+
+      - name: Test deterministic LivingWorld profiles
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldProfile.cpp \
+            modules/mod-livingworld/tests/LivingWorldProfileTests.cpp \
+            -o /tmp/livingworld-profile-tests
+          /tmp/livingworld-profile-tests
 
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@v1.2
