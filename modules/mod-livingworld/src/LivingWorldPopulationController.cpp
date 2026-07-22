@@ -25,6 +25,7 @@ namespace LivingWorld
         PopulationDecision decision;
         decision.currentOnline = currentOnline;
         decision.effectiveTarget = EffectiveTarget(currentOnline, settings);
+        CalculateBand(decision, settings);
 
         if (!settings.simulationEnabled || !settings.autoScale)
         {
@@ -32,13 +33,13 @@ namespace LivingWorld
             return decision;
         }
 
-        if (currentOnline < decision.effectiveTarget && settings.loginEnabled)
+        if (currentOnline < decision.lowerBound && settings.loginEnabled)
         {
             std::uint32_t const budget = CalculateBudget(_loginCredit, diffMs, settings.loginRatePerMinute);
             decision.action = PopulationAction::Login;
             decision.requestedCount = std::min(decision.effectiveTarget - currentOnline, budget);
         }
-        else if (currentOnline > decision.effectiveTarget)
+        else if (currentOnline > decision.upperBound)
         {
             std::uint32_t const budget = CalculateBudget(_logoutCredit, diffMs, settings.logoutRatePerMinute);
             decision.action = PopulationAction::Logout;
@@ -78,5 +79,20 @@ namespace LivingWorld
             target = currentOnline;
 
         return target;
+    }
+
+    void PopulationController::CalculateBand(PopulationDecision& decision, WorldSettings const& settings)
+    {
+        std::uint32_t const tolerance = std::min(
+            settings.populationTolerance,
+            settings.maximumOnline - settings.minimumOnline);
+
+        decision.lowerBound = decision.effectiveTarget > tolerance
+            ? std::max(settings.minimumOnline, decision.effectiveTarget - tolerance)
+            : settings.minimumOnline;
+        decision.upperBound = std::min(settings.maximumOnline, decision.effectiveTarget + tolerance);
+
+        if (!settings.loginEnabled && decision.currentOnline < decision.effectiveTarget)
+            decision.lowerBound = decision.currentOnline;
     }
 }
