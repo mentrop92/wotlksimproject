@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `lw_world_settings` (
   `minimum_online` INT UNSIGNED NOT NULL DEFAULT 50,
   `maximum_online` INT UNSIGNED NOT NULL DEFAULT 500,
   `target_online` INT UNSIGNED NOT NULL DEFAULT 250,
+  `population_tolerance` INT UNSIGNED NOT NULL DEFAULT 15,
   `auto_scale` TINYINT UNSIGNED NOT NULL DEFAULT 1,
   `login_rate_per_minute` INT UNSIGNED NOT NULL DEFAULT 15,
   `logout_rate_per_minute` INT UNSIGNED NOT NULL DEFAULT 20,
