@@ -24,7 +24,8 @@ namespace LivingWorld
         if (std::optional<BotProfile> stored = LoadFromDatabase(characterGuid))
         {
             auto const [itr, inserted] = _profiles.emplace(characterGuid, *stored);
-            return inserted ? &itr->second : nullptr;
+            (void)inserted;
+            return &itr->second;
         }
 
         BotProfile generated = ProfileGenerator::Generate(characterGuid, player->getRace(), player->getClass());
@@ -36,7 +37,7 @@ namespace LivingWorld
 
         auto const [itr, inserted] = _profiles.emplace(characterGuid, generated);
         if (!inserted)
-            return nullptr;
+            return &itr->second;
 
         LOG_INFO(
             "module.livingworld",
@@ -59,12 +60,13 @@ namespace LivingWorld
 
     bool ProfileManager::IsLoaded(std::uint32_t characterGuid) const
     {
-        return _profiles.contains(characterGuid);
+        return _profiles.find(characterGuid) != _profiles.end();
     }
 
     void ProfileManager::UnloadProfile(std::uint32_t characterGuid, bool updateLastSeen)
     {
-        if (!_profiles.contains(characterGuid))
+        auto const itr = _profiles.find(characterGuid);
+        if (itr == _profiles.end())
             return;
 
         if (updateLastSeen)
@@ -74,7 +76,7 @@ namespace LivingWorld
                 characterGuid);
         }
 
-        _profiles.erase(characterGuid);
+        _profiles.erase(itr);
     }
 
     std::size_t ProfileManager::LoadedCount() const
