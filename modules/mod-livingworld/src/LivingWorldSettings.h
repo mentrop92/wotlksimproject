@@ -29,6 +29,7 @@ namespace LivingWorld
         std::uint32_t minimumOnline = 50;
         std::uint32_t maximumOnline = 500;
         std::uint32_t targetOnline = 250;
+        std::uint32_t populationTolerance = 15;
         bool autoScale = true;
         std::uint32_t loginRatePerMinute = 15;
         std::uint32_t logoutRatePerMinute = 20;
@@ -48,6 +49,7 @@ namespace LivingWorld
         bool SetMinimumOnline(std::uint32_t value);
         bool SetMaximumOnline(std::uint32_t value);
         bool SetTargetOnline(std::uint32_t value);
+        bool SetPopulationTolerance(std::uint32_t value);
         void SetAutoScale(bool enabled);
 
     private:
