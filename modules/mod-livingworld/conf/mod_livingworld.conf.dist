@@ -1,8 +1,15 @@
 [worldserver]
 
-# Enable the LivingWorld simulation layer.
+# Enable the LivingWorld module at server startup.
+# This is the static master switch. Runtime pause/resume state is stored in the
+# character database and controlled with .livingworld commands.
 # Default: 1
 LivingWorld.Enable = 1
+
+# Initial runtime state used only when no persisted world settings row exists.
+# Default: 1
+LivingWorld.RuntimeEnabled = 1
+LivingWorld.LoginEnabled = 1
 
 # Create profiles for real human-controlled characters as well as Playerbots.
 # Keep disabled for the production simulation so only AI citizens receive profiles.
@@ -19,6 +26,16 @@ LivingWorld.ProfileCheckIntervalMs = 5000
 # many milliseconds. This prevents human characters from being checked forever.
 # Default: 60000
 LivingWorld.ProfileDetectionTimeoutMs = 60000
+
+# Initial online population policy used only when no persisted settings row exists.
+# These values define the controller contract; automatic login/logout behavior is
+# implemented in the scheduling phase.
+LivingWorld.Population.MinimumOnline = 50
+LivingWorld.Population.MaximumOnline = 500
+LivingWorld.Population.TargetOnline = 250
+LivingWorld.Population.AutoScale = 1
+LivingWorld.Population.LoginRatePerMinute = 15
+LivingWorld.Population.LogoutRatePerMinute = 20
 
 # Maximum number of non-protected short-term memories retained per bot.
 # Memory pruning will be implemented after the identity foundation is stable.
