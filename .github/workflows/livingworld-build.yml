@@ -79,19 +79,35 @@ jobs:
             -DCMAKE_CXX_COMPILER=g++
 
       - name: Build AzerothCore with Playerbots and LivingWorld
+        id: livingworld-build
         shell: bash
         run: |
           set +e
           cmake --build "${GITHUB_WORKSPACE}/build" --config Release --parallel 2 > /tmp/livingworld-build.log 2>&1
           status=$?
           if [ "$status" -ne 0 ]; then
-            echo "LivingWorld combined build failed. Compiler diagnostics:"
-            grep -nE "(^|[[:space:]])(fatal error:|error:|undefined reference|collect2: error)" /tmp/livingworld-build.log | tail -n 120 || true
-            echo "Last 120 build-log lines:"
-            tail -n 120 /tmp/livingworld-build.log
+            {
+              echo "LivingWorld combined build failed. Compiler diagnostics:"
+              grep -nE "(^|[[:space:]])(fatal error:|error:|undefined reference|collect2: error)" /tmp/livingworld-build.log | tail -n 200 || true
+              echo
+              echo "Last 250 build-log lines:"
+              tail -n 250 /tmp/livingworld-build.log
+            } > /tmp/livingworld-diagnostics.txt
+            cat /tmp/livingworld-diagnostics.txt
             exit "$status"
           fi
           tail -n 40 /tmp/livingworld-build.log
+
+      - name: Upload compiler diagnostics
+        if: failure() && steps.livingworld-build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: livingworld-compiler-diagnostics
+          path: |
+            /tmp/livingworld-diagnostics.txt
+            /tmp/livingworld-build.log
+          retention-days: 3
+          if-no-files-found: error
 
       - name: Confirm LivingWorld module was configured
         run: |
