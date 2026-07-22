@@ -63,6 +63,17 @@ jobs:
             -o /tmp/livingworld-profile-tests
           /tmp/livingworld-profile-tests
 
+      - name: Test LivingWorld population controller
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationController.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationControllerTests.cpp \
+            -o /tmp/livingworld-population-tests
+          /tmp/livingworld-population-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
