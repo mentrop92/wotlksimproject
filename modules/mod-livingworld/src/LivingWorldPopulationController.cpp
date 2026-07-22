@@ -83,6 +83,13 @@ namespace LivingWorld
 
     void PopulationController::CalculateBand(PopulationDecision& decision, WorldSettings const& settings)
     {
+        if (!settings.loginEnabled && decision.currentOnline <= decision.effectiveTarget)
+        {
+            decision.lowerBound = decision.currentOnline;
+            decision.upperBound = decision.effectiveTarget;
+            return;
+        }
+
         std::uint32_t const tolerance = std::min(
             settings.populationTolerance,
             settings.maximumOnline - settings.minimumOnline);
@@ -91,8 +98,5 @@ namespace LivingWorld
             ? std::max(settings.minimumOnline, decision.effectiveTarget - tolerance)
             : settings.minimumOnline;
         decision.upperBound = std::min(settings.maximumOnline, decision.effectiveTarget + tolerance);
-
-        if (!settings.loginEnabled && decision.currentOnline < decision.effectiveTarget)
-            decision.lowerBound = decision.currentOnline;
     }
 }
