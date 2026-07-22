@@ -1,3 +1,4 @@
+#include "LivingWorldPopulationController.h"
 #include "LivingWorldProfile.h"
 #include "LivingWorldProfileManager.h"
 #include "LivingWorldSettings.h"
@@ -75,6 +76,7 @@ namespace LivingWorld
             }
 
             sLivingWorldSettings.Load();
+            sLivingWorldPopulation.Reset();
             WorldSettings const& settings = sLivingWorldSettings.Get();
 
             BotProfile const sample = ProfileGenerator::Generate(1, 1, 1);
@@ -91,6 +93,34 @@ namespace LivingWorld
                 settings.minimumOnline,
                 settings.targetOnline,
                 settings.maximumOnline);
+        }
+    };
+
+    class LivingWorldPlayerbotScript : public PlayerbotScript
+    {
+    public:
+        LivingWorldPlayerbotScript() : PlayerbotScript("LivingWorldPlayerbotScript") { }
+
+        void OnPlayerbotUpdate(std::uint32_t diff) override
+        {
+            if (!Config::Enabled)
+                return;
+
+            PopulationDecision const decision = sLivingWorldPopulation.Update(
+                diff,
+                static_cast<std::uint32_t>(sLivingWorldProfiles.LoadedCount()),
+                sLivingWorldSettings.Get());
+
+            if (decision.requestedCount == 0)
+                return;
+
+            LOG_DEBUG(
+                "module.livingworld",
+                "Population controller planned {} {} operation(s): online {}, target {}. Execution will be connected after Playerbots login/logout APIs are validated.",
+                decision.requestedCount,
+                decision.action == PopulationAction::Login ? "login" : "logout",
+                decision.currentOnline,
+                decision.effectiveTarget);
         }
     };
 
@@ -167,6 +197,7 @@ namespace LivingWorld
 void AddLivingWorldScripts()
 {
     new LivingWorld::LivingWorldWorldScript();
+    new LivingWorld::LivingWorldPlayerbotScript();
     new LivingWorld::LivingWorldPlayerScript();
     AddLivingWorldCommandScripts();
 }
