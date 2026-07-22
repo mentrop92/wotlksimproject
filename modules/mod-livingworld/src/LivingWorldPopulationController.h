@@ -20,6 +20,8 @@ namespace LivingWorld
         std::uint32_t requestedCount = 0;
         std::uint32_t currentOnline = 0;
         std::uint32_t effectiveTarget = 0;
+        std::uint32_t lowerBound = 0;
+        std::uint32_t upperBound = 0;
     };
 
     class PopulationController
@@ -34,6 +36,7 @@ namespace LivingWorld
     private:
         static std::uint32_t CalculateBudget(std::uint64_t& credit, std::uint32_t diffMs, std::uint32_t ratePerMinute);
         static std::uint32_t EffectiveTarget(std::uint32_t currentOnline, WorldSettings const& settings);
+        static void CalculateBand(PopulationDecision& decision, WorldSettings const& settings);
 
         std::uint64_t _loginCredit = 0;
         std::uint64_t _logoutCredit = 0;
