@@ -163,7 +163,17 @@ namespace LivingWorld
             BotProfile const* profile = sLivingWorldProfiles.GetProfile(guid);
 
             if (!profile && sPlayerbotsMgr.GetPlayerbotAI(target) != nullptr)
+            {
+                WorldSettings const& settings = sLivingWorldSettings.Get();
+                if (!settings.simulationEnabled || !settings.loginEnabled)
+                {
+                    handler->SendErrorMessage(
+                        "LivingWorld is paused; resume it before creating a new profile for {}.", target->GetName());
+                    return false;
+                }
+
                 profile = sLivingWorldProfiles.EnsureProfile(target);
+            }
 
             if (!profile)
             {
