@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "DatabaseEnv.h"
 #include "Log.h"
+#include "QueryResult.h"
 
 #include <algorithm>
 
