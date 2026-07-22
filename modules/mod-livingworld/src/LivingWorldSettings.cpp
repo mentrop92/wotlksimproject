@@ -147,5 +147,11 @@ namespace LivingWorld
         _settings.targetOnline = std::clamp(_settings.targetOnline, _settings.minimumOnline, _settings.maximumOnline);
         _settings.loginRatePerMinute = std::max<std::uint32_t>(_settings.loginRatePerMinute, 1);
         _settings.logoutRatePerMinute = std::max<std::uint32_t>(_settings.logoutRatePerMinute, 1);
+
+        if (static_cast<std::uint8_t>(_settings.populationMode) > static_cast<std::uint8_t>(PopulationMode::Adaptive))
+            _settings.populationMode = PopulationMode::Fixed;
+
+        if (static_cast<std::uint8_t>(_settings.seedState) > static_cast<std::uint8_t>(SeedState::Custom))
+            _settings.seedState = SeedState::Uninitialized;
     }
 }
