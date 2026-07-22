@@ -1,5 +1,6 @@
 #include "LivingWorldProfile.h"
 #include "LivingWorldProfileManager.h"
+#include "LivingWorldSettings.h"
 
 #include "Config.h"
 #include "Log.h"
@@ -40,6 +41,12 @@ namespace LivingWorld
         {
             return player && !player->IsGameMaster() && sPlayerbotsMgr.GetPlayerbotAI(player) != nullptr;
         }
+
+        bool MayProvisionProfiles()
+        {
+            WorldSettings const& settings = sLivingWorldSettings.Get();
+            return Config::Enabled && settings.simulationEnabled && settings.loginEnabled;
+        }
     }
 
     class LivingWorldWorldScript : public WorldScript
@@ -63,9 +70,12 @@ namespace LivingWorld
         {
             if (!Config::Enabled)
             {
-                LOG_INFO("module.livingworld", "LivingWorld is disabled.");
+                LOG_INFO("module.livingworld", "LivingWorld is disabled by configuration.");
                 return;
             }
+
+            sLivingWorldSettings.Load();
+            WorldSettings const& settings = sLivingWorldSettings.Get();
 
             BotProfile const sample = ProfileGenerator::Generate(1, 1, 1);
             LOG_INFO(
@@ -73,6 +83,14 @@ namespace LivingWorld
                 "LivingWorld started. Profile schema v{}, deterministic generator ready (sample seed {}).",
                 sample.schemaVersion,
                 sample.seed);
+            LOG_INFO(
+                "module.livingworld",
+                "LivingWorld runtime: simulation {}, logins {}, population min/target/max {}/{}/{}.",
+                settings.simulationEnabled ? "enabled" : "paused",
+                settings.loginEnabled ? "enabled" : "paused",
+                settings.minimumOnline,
+                settings.targetOnline,
+                settings.maximumOnline);
         }
     };
 
@@ -87,7 +105,7 @@ namespace LivingWorld
 
         void OnPlayerLogin(Player* player) override
         {
-            if (!Config::Enabled || !player || player->IsGameMaster())
+            if (!MayProvisionProfiles() || !player || player->IsGameMaster())
                 return;
 
             std::uint32_t const guid = player->GetGUID().GetCounter();
@@ -103,7 +121,7 @@ namespace LivingWorld
 
         void OnPlayerUpdate(Player* player, std::uint32_t diff) override
         {
-            if (!Config::Enabled || !player)
+            if (!MayProvisionProfiles() || !player)
                 return;
 
             std::uint32_t const guid = player->GetGUID().GetCounter();
