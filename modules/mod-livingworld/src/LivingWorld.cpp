@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <unordered_map>
 
+void AddLivingWorldCommandScripts();
+
 namespace LivingWorld
 {
     namespace Config
@@ -148,4 +150,5 @@ void AddLivingWorldScripts()
 {
     new LivingWorld::LivingWorldWorldScript();
     new LivingWorld::LivingWorldPlayerScript();
+    AddLivingWorldCommandScripts();
 }
