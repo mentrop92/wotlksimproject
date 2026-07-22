@@ -58,14 +58,15 @@ namespace LivingWorld
                 settings.loginEnabled ? "enabled" : "paused",
                 settings.autoScale ? "enabled" : "disabled");
             handler->PSendSysMessage(
-                "Online AI policy: minimum {} | target {} | maximum {} | login/logout rates {}/{} per minute",
+                "Online AI policy: minimum {} | target {} +/- {} | maximum {} | login/logout rates {}/{} per minute",
                 settings.minimumOnline,
                 settings.targetOnline,
+                settings.populationTolerance,
                 settings.maximumOnline,
                 settings.loginRatePerMinute,
                 settings.logoutRatePerMinute);
             handler->PSendSysMessage(
-                "Loaded profiles: {}. Automatic population adjustment is planned for the scheduling phase.",
+                "Loaded profiles: {}. Population execution remains in dry-run planning mode.",
                 sLivingWorldProfiles.LoadedCount());
         }
     }
@@ -135,7 +136,7 @@ namespace LivingWorld
             {
                 sLivingWorldSettings.SetOperationalState(false, false);
                 handler->SendSysMessage(
-                    "LivingWorld hard pause enabled. High-level simulation is frozen; forced Playerbot logout will be added with the population controller.");
+                    "LivingWorld hard pause enabled. High-level simulation is frozen; forced Playerbot logout will be added with population execution.");
                 return true;
             }
 
@@ -258,7 +259,7 @@ namespace LivingWorld
             std::uint32_t value = 0;
             if (!(input >> value))
             {
-                handler->SendErrorMessage("Usage: .livingworld population min|max|target <number>");
+                handler->SendErrorMessage("Usage: .livingworld population min|max|target|tolerance <number>");
                 return false;
             }
 
@@ -298,7 +299,19 @@ namespace LivingWorld
                 return true;
             }
 
-            handler->SendErrorMessage("Usage: .livingworld population [min|max|target <number>|auto on|off]");
+            if (action == "tolerance")
+            {
+                if (!sLivingWorldSettings.SetPopulationTolerance(value))
+                {
+                    handler->SendErrorMessage("Tolerance must not exceed the minimum-to-maximum population range.");
+                    return false;
+                }
+
+                handler->PSendSysMessage("LivingWorld population tolerance set to {}.", value);
+                return true;
+            }
+
+            handler->SendErrorMessage("Usage: .livingworld population [min|max|target|tolerance <number>|auto on|off]");
             return false;
         }
     };
