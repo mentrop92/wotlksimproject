@@ -1,3 +1,4 @@
+#include "LivingWorldPermissions.h"
 #include "LivingWorldProfileManager.h"
 #include "LivingWorldSettings.h"
 
@@ -5,7 +6,6 @@
 #include "CommandScript.h"
 #include "Player.h"
 #include "PlayerbotMgr.h"
-#include "RBAC.h"
 
 #include <sstream>
 #include <string>
@@ -28,7 +28,6 @@ namespace LivingWorld
                 case ActivityArchetype::Hardcore: return "Hardcore";
                 case ActivityArchetype::NoLifeGrinder: return "No-life grinder";
             }
-
             return "Unknown";
         }
 
@@ -45,7 +44,6 @@ namespace LivingWorld
                 case GoalArchetype::Collecting: return "Collecting";
                 case GoalArchetype::SocialLeadership: return "Social leadership";
             }
-
             return "Unknown";
         }
 
@@ -66,6 +64,11 @@ namespace LivingWorld
                 settings.loginRatePerMinute,
                 settings.logoutRatePerMinute);
             handler->PSendSysMessage(
+                "Compiled safety ceilings: population {} | login rate {} | logout rate {} per minute",
+                SafetyLimits::MaximumPopulation,
+                SafetyLimits::MaximumLoginRatePerMinute,
+                SafetyLimits::MaximumLogoutRatePerMinute);
+            handler->PSendSysMessage(
                 "Loaded profiles: {}. Population execution remains in dry-run planning mode.",
                 sLivingWorldProfiles.LoadedCount());
         }
@@ -80,37 +83,36 @@ namespace LivingWorld
         {
             static ChatCommandTable livingWorldCommandTable =
             {
-                { "status", HandleStatusCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
-                { "enable", HandleEnableCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
-                { "disable", HandleDisableCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
-                { "pause", HandlePauseCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
-                { "resume", HandleResumeCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
-                { "profile", HandleProfileCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No },
-                { "population", HandlePopulationCommand, rbac::RBAC_PERM_COMMAND_GM, Console::No }
+                { "status", HandleStatusCommand, Permissions::View, Console::No },
+                { "enable", HandleEnableCommand, Permissions::RuntimeControl, Console::No },
+                { "disable", HandleDisableCommand, Permissions::RuntimeControl, Console::No },
+                { "pause", HandlePauseCommand, Permissions::RuntimeControl, Console::No },
+                { "resume", HandleResumeCommand, Permissions::RuntimeControl, Console::No },
+                { "profile", HandleProfileCommand, Permissions::ProfileInspect, Console::No },
+                { "population", HandlePopulationCommand, Permissions::PopulationControl, Console::No }
             };
 
             static ChatCommandTable commandTable =
             {
                 { "livingworld", livingWorldCommandTable }
             };
-
             return commandTable;
         }
 
-        static bool HandleStatusCommand(ChatHandler* handler, char const* /*args*/)
+        static bool HandleStatusCommand(ChatHandler* handler, char const*)
         {
             PrintWorldStatus(handler);
             return true;
         }
 
-        static bool HandleEnableCommand(ChatHandler* handler, char const* /*args*/)
+        static bool HandleEnableCommand(ChatHandler* handler, char const*)
         {
             sLivingWorldSettings.SetOperationalState(true, true);
             handler->SendSysMessage("LivingWorld simulation and new AI logins are enabled.");
             return true;
         }
 
-        static bool HandleDisableCommand(ChatHandler* handler, char const* /*args*/)
+        static bool HandleDisableCommand(ChatHandler* handler, char const*)
         {
             sLivingWorldSettings.SetOperationalState(false, false);
             handler->SendSysMessage(
@@ -144,14 +146,14 @@ namespace LivingWorld
             return false;
         }
 
-        static bool HandleResumeCommand(ChatHandler* handler, char const* /*args*/)
+        static bool HandleResumeCommand(ChatHandler* handler, char const*)
         {
             sLivingWorldSettings.SetOperationalState(true, true);
             handler->SendSysMessage("LivingWorld simulation and new AI logins are resumed.");
             return true;
         }
 
-        static bool HandleProfileCommand(ChatHandler* handler, char const* /*args*/)
+        static bool HandleProfileCommand(ChatHandler* handler, char const*)
         {
             Player* target = handler->getSelectedPlayerOrSelf();
             if (!target)
@@ -172,7 +174,6 @@ namespace LivingWorld
                         "LivingWorld is paused; resume it before creating a new profile for {}.", target->GetName());
                     return false;
                 }
-
                 profile = sLivingWorldProfiles.EnsureProfile(target);
             }
 
@@ -238,20 +239,12 @@ namespace LivingWorld
             {
                 std::string value;
                 input >> value;
-                if (value == "on")
+                if (value == "on" || value == "off")
                 {
-                    sLivingWorldSettings.SetAutoScale(true);
-                    handler->SendSysMessage("LivingWorld population auto-scale is enabled.");
+                    sLivingWorldSettings.SetAutoScale(value == "on");
+                    handler->PSendSysMessage("LivingWorld population auto-scale is {}.", value == "on" ? "enabled" : "disabled");
                     return true;
                 }
-
-                if (value == "off")
-                {
-                    sLivingWorldSettings.SetAutoScale(false);
-                    handler->SendSysMessage("LivingWorld population auto-scale is disabled.");
-                    return true;
-                }
-
                 handler->SendErrorMessage("Usage: .livingworld population auto on|off");
                 return false;
             }
@@ -263,56 +256,31 @@ namespace LivingWorld
                 return false;
             }
 
+            bool accepted = false;
             if (action == "min")
+                accepted = sLivingWorldSettings.SetMinimumOnline(value);
+            else if (action == "max")
+                accepted = sLivingWorldSettings.SetMaximumOnline(value);
+            else if (action == "target")
+                accepted = sLivingWorldSettings.SetTargetOnline(value);
+            else if (action == "tolerance")
+                accepted = sLivingWorldSettings.SetPopulationTolerance(value);
+            else
             {
-                if (!sLivingWorldSettings.SetMinimumOnline(value))
-                {
-                    handler->SendErrorMessage("Minimum must not exceed the current target or maximum.");
-                    return false;
-                }
-
-                handler->PSendSysMessage("LivingWorld minimum online AI population set to {}.", value);
-                return true;
+                handler->SendErrorMessage("Usage: .livingworld population [min|max|target|tolerance <number>|auto on|off]");
+                return false;
             }
 
-            if (action == "max")
+            if (!accepted)
             {
-                if (!sLivingWorldSettings.SetMaximumOnline(value))
-                {
-                    handler->SendErrorMessage("Maximum must not be below the current minimum or target.");
-                    return false;
-                }
-
-                handler->PSendSysMessage("LivingWorld maximum online AI population set to {}.", value);
-                return true;
+                handler->PSendSysMessage(
+                    "Rejected unsafe or inconsistent population value. Population values cannot exceed {} and must preserve minimum <= target <= maximum.",
+                    SafetyLimits::MaximumPopulation);
+                return false;
             }
 
-            if (action == "target")
-            {
-                if (!sLivingWorldSettings.SetTargetOnline(value))
-                {
-                    handler->SendErrorMessage("Target must remain between the current minimum and maximum.");
-                    return false;
-                }
-
-                handler->PSendSysMessage("LivingWorld target online AI population set to {}.", value);
-                return true;
-            }
-
-            if (action == "tolerance")
-            {
-                if (!sLivingWorldSettings.SetPopulationTolerance(value))
-                {
-                    handler->SendErrorMessage("Tolerance must not exceed the minimum-to-maximum population range.");
-                    return false;
-                }
-
-                handler->PSendSysMessage("LivingWorld population tolerance set to {}.", value);
-                return true;
-            }
-
-            handler->SendErrorMessage("Usage: .livingworld population [min|max|target|tolerance <number>|auto on|off]");
-            return false;
+            handler->PSendSysMessage("LivingWorld population {} set to {}.", action, value);
+            return true;
         }
     };
 }
