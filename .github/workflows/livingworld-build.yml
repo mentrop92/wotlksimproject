@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout Playerbot core fork
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Checkout Playerbots module fork
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -33,6 +35,7 @@ jobs:
           repository: mentrop92/mod-playerbots
           ref: master
           path: modules/mod-playerbots
+          persist-credentials: false
 
       - name: Install build requirements
         run: |
