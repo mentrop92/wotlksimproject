@@ -6,6 +6,20 @@ LivingWorld must be operable by a server administrator without editing source co
 
 The static `LivingWorld.Enable` configuration option controls whether the module starts at all. Runtime commands control the simulated world after startup.
 
+## Authorization model
+
+LivingWorld uses dedicated RBAC permissions rather than the generic GM command permission:
+
+| Permission | ID | Default assignment |
+|---|---:|---|
+| View status | 19000 | GameMaster and Administrator |
+| Inspect profiles | 19001 | GameMaster and Administrator |
+| Runtime control | 19002 | Administrator only |
+| Population control | 19003 | Administrator only |
+| Destructive world seeding | 19004 | No default assignment; explicit grant required |
+
+The IDs are installed by `data/sql/db-auth/base/livingworld_rbac.sql`. The installer is idempotent and does not delete unrelated permissions or links.
+
 ## Current commands
 
 ### Status
@@ -14,14 +28,7 @@ The static `LivingWorld.Enable` configuration option controls whether the module
 .livingworld status
 ```
 
-Reports:
-
-- whether high-level LivingWorld simulation is enabled
-- whether new LivingWorld AI logins/profile provisioning are enabled
-- minimum, target, and maximum online AI population
-- login and logout rate limits
-- auto-scale state
-- number of profiles currently loaded in memory
+Reports simulation state, login state, population policy, compiled safety ceilings, auto-scale state, and loaded profile count.
 
 ### Enable and resume
 
@@ -30,7 +37,7 @@ Reports:
 .livingworld resume
 ```
 
-Both enable high-level simulation and allow new LivingWorld AI logins. `resume` is the normal counterpart to a pause; `enable` is the explicit master runtime action.
+Both enable high-level simulation and allow new LivingWorld AI logins. These require the runtime-control permission.
 
 ### Disable
 
@@ -38,7 +45,7 @@ Both enable high-level simulation and allow new LivingWorld AI logins. `resume` 
 .livingworld disable
 ```
 
-Disables high-level simulation and new LivingWorld AI logins. In the current foundation, it does not forcibly disconnect existing Playerbots.
+Disables high-level simulation and new LivingWorld AI logins. It does not yet forcibly disconnect existing Playerbots.
 
 ### Soft pause
 
@@ -46,7 +53,7 @@ Disables high-level simulation and new LivingWorld AI logins. In the current fou
 .livingworld pause soft
 ```
 
-Keeps the simulation state available but prevents new LivingWorld AI profile provisioning and future scheduled logins. Existing bots are allowed to remain online.
+Keeps simulation state available but prevents new LivingWorld AI profile provisioning and future scheduled logins.
 
 ### Hard pause
 
@@ -54,7 +61,7 @@ Keeps the simulation state available but prevents new LivingWorld AI profile pro
 .livingworld pause hard
 ```
 
-Freezes high-level LivingWorld activity and blocks new AI logins. Forced, rate-limited logout of existing Playerbots will be implemented with the population controller rather than hidden inside the foundation command.
+Freezes high-level LivingWorld activity and blocks new AI logins. Forced, rate-limited logout will be implemented with population execution.
 
 ### Population policy
 
@@ -63,6 +70,7 @@ Freezes high-level LivingWorld activity and blocks new AI logins. Forced, rate-l
 .livingworld population min 75
 .livingworld population target 250
 .livingworld population max 500
+.livingworld population tolerance 15
 .livingworld population auto on
 .livingworld population auto off
 ```
@@ -73,7 +81,19 @@ The following invariant is always enforced:
 minimum <= target <= maximum
 ```
 
-These commands currently persist the policy contract. The scheduling phase will consume it to gradually log bots in and out.
+Population mutations require the population-control permission.
+
+## Compiled safety ceilings
+
+Configuration, persisted database values, and commands are all bounded by compiled limits:
+
+```text
+maximum AI population: 10,000
+maximum AI login rate: 100 per minute
+maximum AI logout rate: 200 per minute
+```
+
+Unsafe persisted or configuration values are clamped before the controller can use them. Commands reject values outside the limits. These ceilings remain active even if a configuration file or database row is edited directly.
 
 ## Persisted settings
 
@@ -84,6 +104,7 @@ These commands currently persist the policy contract. The scheduling phase will 
 - `minimum_online`
 - `maximum_online`
 - `target_online`
+- `population_tolerance`
 - `auto_scale`
 - `login_rate_per_minute`
 - `logout_rate_per_minute`
@@ -97,10 +118,10 @@ Configuration values provide initial defaults only when no persisted settings ro
 The runtime controller must:
 
 1. Move gradually toward the target instead of logging hundreds of bots in simultaneously.
-2. Respect minimum and maximum bounds.
-3. Use hysteresis so small fluctuations do not cause constant login/logout churn.
+2. Respect persisted and compiled bounds.
+3. Use hysteresis so small fluctuations do not cause login/logout churn.
 4. Reserve capacity for human players.
-5. Reduce AI population when server load crosses configured safeguards.
+5. Reduce AI population when server load crosses safeguards.
 6. Prefer natural session endings during soft reductions.
 7. Rate-limit forced logouts during hard reductions.
 
@@ -108,5 +129,6 @@ The runtime controller must:
 
 - Runtime pause and population-limit changes are reversible and do not delete profiles.
 - World seeding, replacement, and wiping are separate destructive operations.
-- No destructive command may execute without a short-lived confirmation token.
-- Administrative commands must report limitations honestly when the requested behavior belongs to a later phase.
+- No destructive command may execute without the dedicated permission and a short-lived confirmation token.
+- Administrative commands must report limitations honestly when behavior belongs to a later phase.
+- The LLM or future voice gateway will never receive administrative RBAC authority or unrestricted database access.
