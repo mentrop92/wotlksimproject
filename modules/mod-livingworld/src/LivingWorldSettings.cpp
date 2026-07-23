@@ -61,7 +61,16 @@ namespace LivingWorld
         _settings.populationMode = static_cast<PopulationMode>(fields[9].Get<std::uint8_t>());
         _settings.seedState = static_cast<SeedState>(fields[10].Get<std::uint8_t>());
 
+        WorldSettings const before = _settings;
         Normalize();
+
+        if (before.minimumOnline != _settings.minimumOnline || before.maximumOnline != _settings.maximumOnline ||
+            before.targetOnline != _settings.targetOnline || before.populationTolerance != _settings.populationTolerance ||
+            before.loginRatePerMinute != _settings.loginRatePerMinute || before.logoutRatePerMinute != _settings.logoutRatePerMinute)
+        {
+            LOG_WARN("module.livingworld", "Unsafe persisted LivingWorld settings were clamped to compiled safety limits.");
+            Persist();
+        }
     }
 
     WorldSettings const& WorldSettingsManager::Get() const
@@ -78,7 +87,7 @@ namespace LivingWorld
 
     bool WorldSettingsManager::SetMinimumOnline(std::uint32_t value)
     {
-        if (value > _settings.maximumOnline || value > _settings.targetOnline)
+        if (value > SafetyLimits::MaximumPopulation || value > _settings.maximumOnline || value > _settings.targetOnline)
             return false;
 
         _settings.minimumOnline = value;
@@ -89,7 +98,7 @@ namespace LivingWorld
 
     bool WorldSettingsManager::SetMaximumOnline(std::uint32_t value)
     {
-        if (value < _settings.minimumOnline || value < _settings.targetOnline)
+        if (value > SafetyLimits::MaximumPopulation || value < _settings.minimumOnline || value < _settings.targetOnline)
             return false;
 
         _settings.maximumOnline = value;
@@ -100,7 +109,7 @@ namespace LivingWorld
 
     bool WorldSettingsManager::SetTargetOnline(std::uint32_t value)
     {
-        if (value < _settings.minimumOnline || value > _settings.maximumOnline)
+        if (value > SafetyLimits::MaximumPopulation || value < _settings.minimumOnline || value > _settings.maximumOnline)
             return false;
 
         _settings.targetOnline = value;
@@ -111,7 +120,7 @@ namespace LivingWorld
 
     bool WorldSettingsManager::SetPopulationTolerance(std::uint32_t value)
     {
-        if (value > _settings.maximumOnline - _settings.minimumOnline)
+        if (value > SafetyLimits::MaximumPopulation || value > _settings.maximumOnline - _settings.minimumOnline)
             return false;
 
         _settings.populationTolerance = value;
@@ -163,11 +172,17 @@ namespace LivingWorld
 
     void WorldSettingsManager::Normalize()
     {
-        _settings.maximumOnline = std::max(_settings.maximumOnline, _settings.minimumOnline);
+        _settings.minimumOnline = std::min(_settings.minimumOnline, SafetyLimits::MaximumPopulation);
+        _settings.maximumOnline = std::clamp(
+            _settings.maximumOnline,
+            _settings.minimumOnline,
+            SafetyLimits::MaximumPopulation);
         _settings.targetOnline = std::clamp(_settings.targetOnline, _settings.minimumOnline, _settings.maximumOnline);
         _settings.populationTolerance = std::min(_settings.populationTolerance, _settings.maximumOnline - _settings.minimumOnline);
-        _settings.loginRatePerMinute = std::max<std::uint32_t>(_settings.loginRatePerMinute, 1);
-        _settings.logoutRatePerMinute = std::max<std::uint32_t>(_settings.logoutRatePerMinute, 1);
+        _settings.loginRatePerMinute = std::clamp<std::uint32_t>(
+            _settings.loginRatePerMinute, 1, SafetyLimits::MaximumLoginRatePerMinute);
+        _settings.logoutRatePerMinute = std::clamp<std::uint32_t>(
+            _settings.logoutRatePerMinute, 1, SafetyLimits::MaximumLogoutRatePerMinute);
 
         if (static_cast<std::uint8_t>(_settings.populationMode) > static_cast<std::uint8_t>(PopulationMode::Adaptive))
             _settings.populationMode = PopulationMode::Fixed;
