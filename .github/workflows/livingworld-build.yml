@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Checkout Playerbot core fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Checkout Playerbots module fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: mentrop92/mod-playerbots
           ref: master
@@ -75,7 +75,7 @@ jobs:
           /tmp/livingworld-population-tests
 
       - name: Configure ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
           key: livingworld-ubuntu-24.04
           max-size: 2G
@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload compiler diagnostics
         if: failure() && steps.livingworld-build.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: livingworld-compiler-diagnostics
           path: |
@@ -124,4 +124,5 @@ jobs:
         run: |
           test -f modules/mod-livingworld/src/LW_loader.cpp
           test -f modules/mod-livingworld/data/sql/db-characters/livingworld_base.sql
+          test -f modules/mod-livingworld/data/sql/db-auth/base/livingworld_rbac.sql
           grep -R "Addmod_livingworldScripts" build modules -n
