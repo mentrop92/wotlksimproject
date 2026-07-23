@@ -51,7 +51,10 @@
 - [x] Add persisted minimum, target, and maximum online population settings.
 - [x] Add persisted auto-scale and login/logout rate settings.
 - [x] Make new profile provisioning obey runtime pause state.
-- [ ] Validate commands in a running server environment.
+- [x] Add dedicated view, inspection, runtime, population, and destructive-seeding RBAC permissions.
+- [x] Add compiled population and rate safety ceilings.
+- [x] Pin all third-party GitHub Actions to reviewed commit SHAs.
+- [ ] Validate commands and RBAC assignments in a running server environment.
 
 ### Phase 1 exit criteria
 
@@ -70,7 +73,7 @@
 - Schedule realistic session lengths, skipped sessions, and marathon sessions.
 - Add motivation, fatigue, frustration, and burnout.
 - Gradually move the online AI count toward the configured target.
-- Respect minimum, target, and maximum population bounds.
+- Respect minimum, target, maximum, and compiled safety bounds.
 - Enforce login/logout rate limits and hysteresis.
 - Reserve online capacity for human players.
 - Reduce AI population when server-load safeguards are crossed.
@@ -85,6 +88,7 @@
 
 - Add fresh, young, established, mature, and custom presets.
 - Implement short-lived confirmation tokens for destructive operations.
+- Require the separate destructive-seeding RBAC permission.
 - Support add, replace, and LivingWorld-only wipe operations.
 - Create account-like main/alt identity groups.
 - Generate coherent levels, talents, skills, reputations, equipment, professions, and gold.
@@ -121,3 +125,20 @@
 - Produce server-history summaries and notable-character reports.
 - Balance population distributions without erasing individuality.
 - Add reproducible simulation seeds and scenario test suites.
+
+## Phase 8 — AI Voice and Natural Conversation
+
+**Goal:** let players speak naturally with AI guildmates, parties, raids, and nearby characters without giving an LLM unrestricted game authority.
+
+- Define transport-independent dialogue and structured-intent schemas.
+- Add an authenticated, read-only LivingWorld context bridge.
+- Prototype text dialogue before microphone/audio integration.
+- Add a companion push-to-talk client with subtitles and speaker identity.
+- Integrate a Mumble-compatible low-latency voice transport and AI gateway.
+- Add channel mapping for guild, party, raid, officer, and proximity contexts.
+- Add speaker arbitration, interruption, cost budgets, and raid callout hierarchy.
+- Permit only allowlisted structured actions validated independently by worldserver.
+- Add privacy controls, short-lived credentials, retention controls, and audit logging.
+- Investigate native WoW voice integration only after technical and legal feasibility review.
+
+See `docs/livingworld/VOICE_ARCHITECTURE.md`.
