@@ -5,6 +5,13 @@
 
 namespace LivingWorld
 {
+    namespace SafetyLimits
+    {
+        inline constexpr std::uint32_t MaximumPopulation = 10000;
+        inline constexpr std::uint32_t MaximumLoginRatePerMinute = 100;
+        inline constexpr std::uint32_t MaximumLogoutRatePerMinute = 200;
+    }
+
     enum class PopulationMode : std::uint8_t
     {
         Fixed = 0,
