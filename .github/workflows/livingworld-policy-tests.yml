@@ -51,3 +51,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldScheduleEligibilityTests.cpp \
             -o /tmp/livingworld-schedule-eligibility-tests
           /tmp/livingworld-schedule-eligibility-tests
+
+      - name: Test deterministic schedule occurrences
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleOccurrence.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleOccurrenceTests.cpp \
+            -o /tmp/livingworld-schedule-occurrence-tests
+          /tmp/livingworld-schedule-occurrence-tests
