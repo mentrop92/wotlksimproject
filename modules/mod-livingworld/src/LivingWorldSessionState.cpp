@@ -66,10 +66,15 @@ namespace LivingWorld
 
         if (signals.plannedMinutes > 0 && signals.elapsedMinutes >= signals.plannedMinutes)
             readiness += 20;
-        if (signals.inCombat)
-            readiness -= 40;
         if (signals.socialActivity)
             readiness -= 10;
+
+        // Combat is a hard safety condition, not merely another weighted signal.
+        // Even a fully exhausted bot should not become a normal logout candidate
+        // while actively fighting. Emergency population handling may still rank it
+        // separately after safer candidates have been exhausted.
+        if (signals.inCombat)
+            readiness = std::min<std::int32_t>(readiness, 25);
 
         next.logoutReadiness = ClampScore(readiness);
         return next;
