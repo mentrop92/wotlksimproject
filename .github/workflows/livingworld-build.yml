@@ -158,6 +158,17 @@ jobs:
             -o /tmp/livingworld-policy-tests
           /tmp/livingworld-policy-tests
 
+      - name: Test LivingWorld target smoothing
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldTargetSmoother.cpp \
+            modules/mod-livingworld/tests/LivingWorldTargetSmootherTests.cpp \
+            -o /tmp/livingworld-target-smoother-tests
+          /tmp/livingworld-target-smoother-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
