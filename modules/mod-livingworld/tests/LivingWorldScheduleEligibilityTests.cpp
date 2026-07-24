@@ -36,12 +36,29 @@ int main()
     assert(!result.withinLoginWindow);
     assert(result.minutesUntilWindow == 105);
 
+    // From the day after the only scheduled day, the next window is six days
+    // and 23 hours 45 minutes away rather than merely tomorrow.
     input.dayOfWeek = 3;
     input.minuteOfDay = 18U * 60U;
     result = ScheduleEligibility::Evaluate(plan, input);
     assert(!result.scheduledToday);
     assert(!result.eligible);
-    assert(result.minutesUntilWindow == 360);
+    assert(result.minutesUntilWindow == 10065);
+
+    // After today's window closes, the evaluator rolls to the same weekday next week.
+    input.dayOfWeek = 2;
+    input.minuteOfDay = 20U * 60U;
+    result = ScheduleEligibility::Evaluate(plan, input);
+    assert(result.scheduledToday);
+    assert(!result.withinLoginWindow);
+    assert(result.minutesUntilWindow == 9945);
+
+    // Invalid empty schedules remain bounded and never become eligible.
+    plan.dayMask = 0;
+    result = ScheduleEligibility::Evaluate(plan, input);
+    assert(!result.scheduledToday);
+    assert(!result.eligible);
+    assert(result.minutesUntilWindow == 10080);
 
     std::cout << "LivingWorld schedule eligibility tests passed.\n";
     return 0;
