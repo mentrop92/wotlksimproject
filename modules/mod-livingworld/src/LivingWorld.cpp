@@ -106,9 +106,13 @@ namespace LivingWorld
             if (!Config::Enabled)
                 return;
 
+            // Human online counting remains intentionally disconnected until the
+            // stable AzerothCore/Playerbots accounting API is validated. The
+            // configured reserve is still enforced by passing zero observed humans.
             PopulationDecision const decision = sLivingWorldPopulation.Update(
                 diff,
                 static_cast<std::uint32_t>(sLivingWorldProfiles.LoadedCount()),
+                0,
                 sLivingWorldSettings.Get());
 
             if (decision.requestedCount == 0)
@@ -116,11 +120,13 @@ namespace LivingWorld
 
             LOG_DEBUG(
                 "module.livingworld",
-                "Population controller planned {} {} operation(s): online {}, target {}. Execution will be connected after Playerbots login/logout APIs are validated.",
+                "Population controller planned {} {} operation(s): AI online {}, humans {}, target {}, AI ceiling {}. Execution will be connected after Playerbots login/logout APIs are validated.",
                 decision.requestedCount,
                 decision.action == PopulationAction::Login ? "login" : "logout",
                 decision.currentOnline,
-                decision.effectiveTarget);
+                decision.currentHumanOnline,
+                decision.effectiveTarget,
+                decision.effectiveAICeiling);
         }
     };
 
