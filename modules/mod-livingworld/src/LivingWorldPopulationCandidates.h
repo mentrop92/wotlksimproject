@@ -20,6 +20,7 @@ namespace LivingWorld
         bool protectedActivity = false;
         std::uint32_t minutesUntilSchedule = 0;
         std::uint32_t sessionOverrunMinutes = 0;
+        std::uint8_t logoutReadiness = 0;
     };
 
     struct RankedCandidate
