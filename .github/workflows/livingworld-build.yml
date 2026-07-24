@@ -169,6 +169,17 @@ jobs:
             -o /tmp/livingworld-target-smoother-tests
           /tmp/livingworld-target-smoother-tests
 
+      - name: Test LivingWorld population cooldowns
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCooldowns.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationCooldownsTests.cpp \
+            -o /tmp/livingworld-population-cooldown-tests
+          /tmp/livingworld-population-cooldown-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
