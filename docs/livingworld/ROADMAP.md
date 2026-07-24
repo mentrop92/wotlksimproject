@@ -69,18 +69,21 @@
 
 **Goal:** translate identity and administrator policy into safe, realistic online population behavior.
 
-- Translate lifestyle traits into weekly login windows.
-- Schedule realistic session lengths, skipped sessions, and marathon sessions.
-- Add motivation, fatigue, frustration, and burnout.
-- Gradually move the online AI count toward the configured target.
-- Respect minimum, target, maximum, and compiled safety bounds.
-- Enforce login/logout rate limits and hysteresis.
-- Reserve online capacity for human players.
-- Reduce AI population when server-load safeguards are crossed.
-- Allow soft pause to drain naturally.
-- Allow hard pause to perform rate-limited forced Playerbot logout.
-- Add time-of-day and weekday population curves.
-- Add accelerated simulation commands for days and months.
+- [x] Translate lifestyle traits into deterministic weekly login windows.
+- [x] Schedule realistic session lengths, skipped sessions, and marathon sessions.
+- [x] Add a tested dynamic model for motivation, fatigue, frustration, burnout, and logout readiness.
+- [x] Build a dry-run population planner that moves toward a bounded target.
+- [x] Respect minimum, target, maximum, and compiled safety bounds.
+- [x] Enforce login/logout rate limits and hysteresis.
+- [x] Reserve online capacity for human players in the planner.
+- [x] Add protected-activity and session-aware candidate ranking.
+- [x] Add time-of-day and weekday population target curves.
+- [ ] Connect verified human online counts from a stable core API.
+- [ ] Add server-load safeguards and adaptive target reduction.
+- [ ] Allow soft pause to drain naturally through selected session endings.
+- [ ] Allow hard pause to perform rate-limited forced Playerbot logout.
+- [ ] Validate Playerbots login/logout control APIs before enabling execution.
+- [ ] Add accelerated simulation commands for days and months.
 
 ## Phase 3 — World Seeding and Synthetic History
 
