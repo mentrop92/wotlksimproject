@@ -99,6 +99,18 @@ jobs:
             -o /tmp/livingworld-candidate-tests
           /tmp/livingworld-candidate-tests
 
+      - name: Test LivingWorld population plans
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCandidates.cpp \
+            modules/mod-livingworld/src/LivingWorldPopulationPlan.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationPlanTests.cpp \
+            -o /tmp/livingworld-plan-tests
+          /tmp/livingworld-plan-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
