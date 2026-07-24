@@ -12,7 +12,7 @@ namespace LivingWorld
         std::uint32_t expectedHumanOnline,
         WorldSettings const& settings,
         ServerLoadSnapshot const& load,
-        LoadGovernorPolicy const& loadPolicy)
+        ServerLoadPolicy const& loadPolicy)
     {
         std::vector<PopulationForecastPoint> forecast;
         forecast.reserve(24);
@@ -22,8 +22,15 @@ namespace LivingWorld
 
         for (std::uint32_t index = 0; index < 24; ++index)
         {
-            std::uint32_t const scheduledTarget = PopulationCurve::CalculateTarget(day, hour, settings);
-            LoadGovernorDecision const governed = LoadGovernor::Apply(scheduledTarget, load, loadPolicy);
+            PopulationCurveInput curveInput;
+            curveInput.minimumOnline = settings.minimumOnline;
+            curveInput.baseTarget = settings.targetOnline;
+            curveInput.maximumOnline = settings.maximumOnline;
+            curveInput.weekday = day;
+            curveInput.minuteOfDay = static_cast<std::uint16_t>(hour * 60U);
+
+            PopulationCurveResult const curve = PopulationCurve::Evaluate(curveInput);
+            ServerLoadDecision const governed = LoadGovernor::Evaluate(curve.target, load, loadPolicy);
 
             std::uint32_t const totalCapacity = std::min(settings.maximumTotalOnline, SafetyLimits::MaximumTotalOnline);
             std::uint32_t const protectedHumanSlots = std::max(expectedHumanOnline, settings.reservedHumanSlots);
@@ -34,11 +41,12 @@ namespace LivingWorld
             forecast.push_back({
                 day,
                 hour,
-                scheduledTarget,
-                governed.target,
+                curve.target,
+                governed.governedTarget,
                 aiCeiling,
-                std::min(governed.target, aiCeiling),
-                governed.pressure
+                std::min(governed.governedTarget, aiCeiling),
+                governed.constrained,
+                governed.emergencyDrain
             });
 
             hour = static_cast<std::uint8_t>((hour + 1) % 24);
