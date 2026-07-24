@@ -17,7 +17,8 @@ namespace LivingWorld
         std::uint32_t governedTarget = 0;
         std::uint32_t effectiveAICeiling = 0;
         std::uint32_t finalTarget = 0;
-        LoadPressure loadPressure = LoadPressure::Healthy;
+        bool loadConstrained = false;
+        bool emergencyDrain = false;
     };
 
     class PopulationForecast
@@ -29,7 +30,7 @@ namespace LivingWorld
             std::uint32_t expectedHumanOnline,
             WorldSettings const& settings,
             ServerLoadSnapshot const& load,
-            LoadGovernorPolicy const& loadPolicy = {});
+            ServerLoadPolicy const& loadPolicy = ServerLoadPolicy{});
     };
 }
 
