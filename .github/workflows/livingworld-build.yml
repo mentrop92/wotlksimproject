@@ -133,6 +133,17 @@ jobs:
             -o /tmp/livingworld-session-tests
           /tmp/livingworld-session-tests
 
+      - name: Test LivingWorld server load governor
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldLoadGovernor.cpp \
+            modules/mod-livingworld/tests/LivingWorldLoadGovernorTests.cpp \
+            -o /tmp/livingworld-load-tests
+          /tmp/livingworld-load-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
