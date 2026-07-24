@@ -180,6 +180,17 @@ jobs:
             -o /tmp/livingworld-population-cooldown-tests
           /tmp/livingworld-population-cooldown-tests
 
+      - name: Test LivingWorld population diagnostics
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationDiagnostics.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationDiagnosticsTests.cpp \
+            -o /tmp/livingworld-population-diagnostics-tests
+          /tmp/livingworld-population-diagnostics-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
