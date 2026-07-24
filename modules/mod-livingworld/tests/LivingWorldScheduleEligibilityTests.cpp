@@ -36,14 +36,14 @@ int main()
     assert(!result.withinLoginWindow);
     assert(result.minutesUntilWindow == 105);
 
-    // From the day after the only scheduled day, the next window is six days
-    // and 23 hours 45 minutes away rather than merely tomorrow.
+    // From the day after the only scheduled day, the next early window is five
+    // days and 23 hours 45 minutes away (Wednesday 17:45 from Thursday 18:00).
     input.dayOfWeek = 3;
     input.minuteOfDay = 18U * 60U;
     result = ScheduleEligibility::Evaluate(plan, input);
     assert(!result.scheduledToday);
     assert(!result.eligible);
-    assert(result.minutesUntilWindow == 10065);
+    assert(result.minutesUntilWindow == 8625);
 
     // After today's window closes, the evaluator rolls to the same weekday next week.
     input.dayOfWeek = 2;
