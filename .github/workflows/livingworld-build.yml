@@ -77,6 +77,17 @@ jobs:
             -o /tmp/livingworld-population-tests
           /tmp/livingworld-population-tests
 
+      - name: Test LivingWorld schedule planner
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSchedulePlanner.cpp \
+            modules/mod-livingworld/tests/LivingWorldSchedulePlannerTests.cpp \
+            -o /tmp/livingworld-schedule-tests
+          /tmp/livingworld-schedule-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
