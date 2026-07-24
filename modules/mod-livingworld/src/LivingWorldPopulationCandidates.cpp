@@ -59,6 +59,7 @@ namespace LivingWorld
 
             std::int32_t score = candidate.sessionComplete ? 1000 : 0;
             score += static_cast<std::int32_t>(std::min<std::uint32_t>(candidate.sessionOverrunMinutes, 720));
+            score += static_cast<std::int32_t>(candidate.logoutReadiness) * 5;
             if (candidate.grouped)
                 score -= 250;
             if (candidate.inInstance)
