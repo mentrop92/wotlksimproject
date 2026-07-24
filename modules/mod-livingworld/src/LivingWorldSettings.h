@@ -8,6 +8,7 @@ namespace LivingWorld
     namespace SafetyLimits
     {
         inline constexpr std::uint32_t MaximumPopulation = 10000;
+        inline constexpr std::uint32_t MaximumTotalOnline = 20000;
         inline constexpr std::uint32_t MaximumLoginRatePerMinute = 100;
         inline constexpr std::uint32_t MaximumLogoutRatePerMinute = 200;
     }
@@ -40,6 +41,13 @@ namespace LivingWorld
         bool autoScale = true;
         std::uint32_t loginRatePerMinute = 15;
         std::uint32_t logoutRatePerMinute = 20;
+
+        // Phase 2 capacity policy. The controller always reserves at least this
+        // many total slots for humans, and yields additional slots when the
+        // observed human population exceeds the reserve.
+        std::uint32_t maximumTotalOnline = 600;
+        std::uint32_t reservedHumanSlots = 100;
+
         PopulationMode populationMode = PopulationMode::Fixed;
         SeedState seedState = SeedState::Uninitialized;
     };
