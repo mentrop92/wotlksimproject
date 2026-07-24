@@ -20,11 +20,14 @@ namespace LivingWorld
     PopulationDecision PopulationController::Update(
         std::uint32_t diffMs,
         std::uint32_t currentOnline,
+        std::uint32_t currentHumanOnline,
         WorldSettings const& settings)
     {
         PopulationDecision decision;
         decision.currentOnline = currentOnline;
-        decision.effectiveTarget = EffectiveTarget(currentOnline, settings);
+        decision.currentHumanOnline = currentHumanOnline;
+        decision.effectiveAICeiling = EffectiveAICeiling(currentHumanOnline, settings);
+        decision.effectiveTarget = EffectiveTarget(currentOnline, decision.effectiveAICeiling, settings);
         CalculateBand(decision, settings);
 
         if (!settings.simulationEnabled || !settings.autoScale)
@@ -69,11 +72,27 @@ namespace LivingWorld
         return available;
     }
 
-    std::uint32_t PopulationController::EffectiveTarget(
-        std::uint32_t currentOnline,
+    std::uint32_t PopulationController::EffectiveAICeiling(
+        std::uint32_t currentHumanOnline,
         WorldSettings const& settings)
     {
-        std::uint32_t target = std::clamp(settings.targetOnline, settings.minimumOnline, settings.maximumOnline);
+        std::uint32_t const totalCapacity = std::min(settings.maximumTotalOnline, SafetyLimits::MaximumTotalOnline);
+        std::uint32_t const protectedHumanSlots = std::max(currentHumanOnline, settings.reservedHumanSlots);
+
+        if (protectedHumanSlots >= totalCapacity)
+            return 0;
+
+        return std::min(settings.maximumOnline, totalCapacity - protectedHumanSlots);
+    }
+
+    std::uint32_t PopulationController::EffectiveTarget(
+        std::uint32_t currentOnline,
+        std::uint32_t effectiveAICeiling,
+        WorldSettings const& settings)
+    {
+        std::uint32_t target = std::min(
+            std::clamp(settings.targetOnline, settings.minimumOnline, settings.maximumOnline),
+            effectiveAICeiling);
 
         if (!settings.loginEnabled && currentOnline < target)
             target = currentOnline;
@@ -94,9 +113,10 @@ namespace LivingWorld
             settings.populationTolerance,
             settings.maximumOnline - settings.minimumOnline);
 
+        std::uint32_t const policyMinimum = std::min(settings.minimumOnline, decision.effectiveAICeiling);
         decision.lowerBound = decision.effectiveTarget > tolerance
-            ? std::max(settings.minimumOnline, decision.effectiveTarget - tolerance)
-            : settings.minimumOnline;
-        decision.upperBound = std::min(settings.maximumOnline, decision.effectiveTarget + tolerance);
+            ? std::max(policyMinimum, decision.effectiveTarget - tolerance)
+            : policyMinimum;
+        decision.upperBound = std::min(decision.effectiveAICeiling, decision.effectiveTarget + tolerance);
     }
 }
