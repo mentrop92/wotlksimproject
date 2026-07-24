@@ -111,6 +111,28 @@ jobs:
             -o /tmp/livingworld-plan-tests
           /tmp/livingworld-plan-tests
 
+      - name: Test LivingWorld population curves
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCurve.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationCurveTests.cpp \
+            -o /tmp/livingworld-curve-tests
+          /tmp/livingworld-curve-tests
+
+      - name: Test LivingWorld dynamic session state
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSessionState.cpp \
+            modules/mod-livingworld/tests/LivingWorldSessionStateTests.cpp \
+            -o /tmp/livingworld-session-tests
+          /tmp/livingworld-session-tests
+
       - name: Configure ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
