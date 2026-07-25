@@ -27,6 +27,11 @@ namespace LivingWorld
         // the value on the candidate avoids coupling the selector to history
         // storage while still allowing missed sessions to influence ranking.
         std::int16_t adherenceLoginPriority = 0;
+
+        // Precomputed by PopulationBalancePolicy from the current faction mix.
+        // The selector clamps it again so invalid external state cannot dominate
+        // schedule, safety, or capacity policy.
+        std::int16_t balanceLoginPriority = 0;
     };
 
     struct RankedCandidate
