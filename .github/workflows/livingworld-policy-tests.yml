@@ -96,3 +96,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldPopulationBalanceTests.cpp \
             -o /tmp/livingworld-population-balance-tests
           /tmp/livingworld-population-balance-tests
+
+      - name: Test bounded role-balance policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationRoleBalance.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationRoleBalanceTests.cpp \
+            -o /tmp/livingworld-population-role-balance-tests
+          /tmp/livingworld-population-role-balance-tests
