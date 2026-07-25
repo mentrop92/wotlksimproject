@@ -9,24 +9,28 @@ using namespace LivingWorld;
 int main()
 {
     std::vector<PopulationCandidate> candidates = {
-        { 1, false, true, false, false, false, false, false, false, false, 0, 0, 0, 0 },
-        { 2, false, false, false, false, false, true, false, false, false, 30, 0, 0, 0 },
-        { 3, true, false, true, false, false, false, false, false, false, 0, 45, 80, 0 },
-        { 4, true, false, true, true, false, false, false, false, false, 0, 120, 100, 0 },
-        { 5, true, false, true, false, true, true, true, true, false, 0, 180, 90, 0 },
-        { 6, true, false, false, false, false, false, false, false, false, 0, 0, 20, 0 },
-        { 7, true, false, true, false, false, false, false, false, true, 0, 300, 100, 0 },
-        { 8, true, false, false, false, false, false, false, false, false, 0, 0, 95, 0 },
-        { 9, false, false, false, false, false, false, false, false, false, 60, 0, 0, 500 },
-        { 10, false, false, false, false, false, false, false, false, false, 0, 0, 0, 5000 }
+        { 1, false, true, false, false, false, false, false, false, false, 0, 0, 0, 0, 0 },
+        { 2, false, false, false, false, false, true, false, false, false, 30, 0, 0, 0, 0 },
+        { 3, true, false, true, false, false, false, false, false, false, 0, 45, 80, 0, 0 },
+        { 4, true, false, true, true, false, false, false, false, false, 0, 120, 100, 0, 0 },
+        { 5, true, false, true, false, true, true, true, true, false, 0, 180, 90, 0, 0 },
+        { 6, true, false, false, false, false, false, false, false, false, 0, 0, 20, 0, 0 },
+        { 7, true, false, true, false, false, false, false, false, true, 0, 300, 100, 0, 0 },
+        { 8, true, false, false, false, false, false, false, false, false, 0, 0, 95, 0, 0 },
+        { 9, false, false, false, false, false, false, false, false, false, 60, 0, 0, 500, 0 },
+        { 10, false, false, false, false, false, false, false, false, false, 0, 0, 0, 5000, 0 },
+        { 11, false, false, false, false, false, false, false, false, false, 0, 0, 0, 0, 300 },
+        { 12, false, false, false, false, false, false, false, false, false, 0, 0, 0, 0, 5000 }
     };
 
-    auto login = PopulationCandidateSelector::RankLoginCandidates(candidates, 4);
-    assert(login.size() == 4);
+    auto login = PopulationCandidateSelector::RankLoginCandidates(candidates, 6);
+    assert(login.size() == 6);
     assert(login[0].characterGuid == 1);
-    assert(login[1].characterGuid == 10); // unsafe external values are clamped to +500
+    assert(login[1].characterGuid == 10); // unsafe adherence values are clamped to +500
     assert(login[2].characterGuid == 9);
-    assert(login[3].characterGuid == 2);
+    assert(login[3].characterGuid == 11); // bounded faction-balancing adjustment
+    assert(login[4].characterGuid == 12); // unsafe balance values are clamped to +300
+    assert(login[5].characterGuid == 2);
 
     auto logout = PopulationCandidateSelector::RankLogoutCandidates(candidates, 10, false);
     assert(logout.size() == 3);
