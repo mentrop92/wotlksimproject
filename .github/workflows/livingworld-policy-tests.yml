@@ -119,3 +119,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldRuntimeObservabilityTests.cpp \
             -o /tmp/livingworld-runtime-observability-tests
           /tmp/livingworld-runtime-observability-tests
+
+      - name: Test rolling runtime metrics
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldRuntimeMetrics.cpp \
+            modules/mod-livingworld/tests/LivingWorldRuntimeMetricsTests.cpp \
+            -o /tmp/livingworld-runtime-metrics-tests
+          /tmp/livingworld-runtime-metrics-tests
