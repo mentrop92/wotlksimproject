@@ -179,3 +179,15 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldStateCheckpointHistoryTests.cpp \
             -o /tmp/livingworld-state-checkpoint-history-tests
           /tmp/livingworld-state-checkpoint-history-tests
+
+      - name: Test bounded checkpoint rollback validation
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldStateCheckpoint.cpp \
+            modules/mod-livingworld/src/LivingWorldStateRollback.cpp \
+            modules/mod-livingworld/tests/LivingWorldStateRollbackTests.cpp \
+            -o /tmp/livingworld-state-rollback-tests
+          /tmp/livingworld-state-rollback-tests
