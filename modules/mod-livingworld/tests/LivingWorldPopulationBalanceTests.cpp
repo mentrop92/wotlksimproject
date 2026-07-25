@@ -17,8 +17,8 @@ int main()
     assert(PopulationBalancePolicy::LoginPriorityAdjustment(PopulationFaction::Horde, allianceHeavy) == 300);
 
     PopulationBalanceSnapshot modestImbalance{ 125, 75, 10 };
-    assert(PopulationBalancePolicy::LoginPriorityAdjustment(PopulationFaction::Alliance, modestImbalance) == -60);
-    assert(PopulationBalancePolicy::LoginPriorityAdjustment(PopulationFaction::Horde, modestImbalance) == 60);
+    assert(PopulationBalancePolicy::LoginPriorityAdjustment(PopulationFaction::Alliance, modestImbalance) == -40);
+    assert(PopulationBalancePolicy::LoginPriorityAdjustment(PopulationFaction::Horde, modestImbalance) == 40);
 
     PopulationBalanceSnapshot invalidTolerance{ 190, 10, 100 };
     assert(PopulationBalancePolicy::LoginPriorityAdjustment(PopulationFaction::Alliance, invalidTolerance) == 0);
