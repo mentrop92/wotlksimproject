@@ -6,6 +6,7 @@ on:
     branches:
       - agent/livingworld-profile-persistence
       - agent/livingworld-runtime-observability
+      - agent/livingworld-state-checkpoints
   pull_request:
     branches:
       - Playerbot
@@ -143,3 +144,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldRuntimeStateTests.cpp \
             -o /tmp/livingworld-runtime-state-tests
           /tmp/livingworld-runtime-state-tests
+
+      - name: Test bounded state checkpoints
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldStateCheckpoint.cpp \
+            modules/mod-livingworld/tests/LivingWorldStateCheckpointTests.cpp \
+            -o /tmp/livingworld-state-checkpoint-tests
+          /tmp/livingworld-state-checkpoint-tests
