@@ -1,0 +1,109 @@
+name: LivingWorld policy tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/livingworld-profile-persistence
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-policy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy-tests:
+    name: Forecast and schedule policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Test 24-hour population forecast
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCurve.cpp \
+            modules/mod-livingworld/src/LivingWorldLoadGovernor.cpp \
+            modules/mod-livingworld/src/LivingWorldPopulationForecast.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationForecastTests.cpp \
+            -o /tmp/livingworld-forecast-tests
+          /tmp/livingworld-forecast-tests
+
+      - name: Test schedule eligibility
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleEligibility.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleEligibilityTests.cpp \
+            -o /tmp/livingworld-schedule-eligibility-tests
+          /tmp/livingworld-schedule-eligibility-tests
+
+      - name: Test deterministic schedule occurrences
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleOccurrence.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleOccurrenceTests.cpp \
+            -o /tmp/livingworld-schedule-occurrence-tests
+          /tmp/livingworld-schedule-occurrence-tests
+
+      - name: Test bounded upcoming schedule calendars
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleOccurrence.cpp \
+            modules/mod-livingworld/src/LivingWorldScheduleCalendar.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleCalendarTests.cpp \
+            -o /tmp/livingworld-schedule-calendar-tests
+          /tmp/livingworld-schedule-calendar-tests
+
+      - name: Test schedule adherence policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleAdherence.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleAdherenceTests.cpp \
+            -o /tmp/livingworld-schedule-adherence-tests
+          /tmp/livingworld-schedule-adherence-tests
+
+      - name: Test bounded faction-balance policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationBalance.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationBalanceTests.cpp \
+            -o /tmp/livingworld-population-balance-tests
+          /tmp/livingworld-population-balance-tests
+
+      - name: Test bounded role-balance policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationRoleBalance.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationRoleBalanceTests.cpp \
+            -o /tmp/livingworld-population-role-balance-tests
+          /tmp/livingworld-population-role-balance-tests

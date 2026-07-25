@@ -1,20 +1,20 @@
 # LivingWorld
 
-LivingWorld is the higher-level simulation module for the private WotLK AI server project. It sits beside `mod-playerbots` and adds persistent identity, intelligence differences, preferences, schedules, relationships, memories, and long-term goals without replacing Playerbots combat or gameplay logic.
+LivingWorld is the higher-level simulation module for the private WotLK AI server project. It sits beside `mod-playerbots` and adds persistent identity, intelligence differences, preferences, schedules, relationships, memories, long-term goals, population administration, and world-history generation without replacing Playerbots combat or gameplay logic.
 
 ## Current status
 
-The `agent/livingworld-phase-0-1` branch contains the Phase 0 foundation and the first Phase 1 identity components:
+Phase 0 is merged and the current Phase 1 branch adds:
 
-- module configuration and startup bootstrap
-- deterministic profile generation
-- separate personality, intelligence, lifestyle, and preference dimensions
-- playtime archetypes ranging from dormant players to rare 24/7 grinders
-- character-database tables for profiles, schedules, memories, and relationships
-- architecture, schema, and roadmap documentation
-- GitHub Actions compilation with the `mentrop92/mod-playerbots` fork
+- deterministic multidimensional profiles
+- character-database persistence and in-memory caching
+- actual Playerbot detection after delayed AI registration
+- human-character exclusion by default
+- deterministic generator and population-distribution tests
+- administrator runtime settings that survive restarts
+- pause/resume and online-population policy commands
 
-Runtime Playerbot detection and profile persistence are intentionally the next step after the first green combined build.
+The dedicated Ubuntu 24.04 combined build compiles AzerothCore, `mod-playerbots`, and `mod-livingworld` together through GitHub Actions.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ AzerothCore Playerbot fork
     └── identity, schedules, goals, memories, relationships, economy, organizations
 ```
 
-LivingWorld should use AzerothCore script hooks and stable Playerbots interfaces. Direct edits to Playerbots or core code require a demonstrated integration need.
+LivingWorld uses AzerothCore script hooks and stable Playerbots interfaces. Direct edits to Playerbots or core code require a demonstrated integration need.
 
 ## Configuration
 
@@ -35,23 +35,45 @@ Copy `conf/mod_livingworld.conf.dist` through the normal AzerothCore module conf
 Important defaults:
 
 - `LivingWorld.Enable = 1`
+- `LivingWorld.RuntimeEnabled = 1`
+- `LivingWorld.LoginEnabled = 1`
 - `LivingWorld.ProfileHumans = 0`
-- `LivingWorld.ProfileCheckIntervalMs = 5000`
-- `LivingWorld.MemoryLimit = 50`
+- population minimum/target/maximum: `50/250/500`
+- population login/logout rates: `15/20` per minute
 
-Human-controlled characters are not profiled by default.
+Persisted values in `lw_world_settings` override runtime defaults after the initial settings row is created. Human-controlled characters are not profiled by default.
+
+## Administrator commands
+
+```text
+.livingworld status
+.livingworld enable
+.livingworld disable
+.livingworld pause soft
+.livingworld pause hard
+.livingworld resume
+.livingworld population
+.livingworld population min <number>
+.livingworld population target <number>
+.livingworld population max <number>
+.livingworld population auto on|off
+.livingworld profile
+```
+
+The current commands persist and enforce the control policy. Automatic rate-limited bot login/logout begins in the scheduling and population-controller phase.
 
 ## Documentation
 
 - `docs/livingworld/AI_ARCHITECTURE.md`
 - `docs/livingworld/BOT_PROFILE_SCHEMA.md`
+- `docs/livingworld/ADMIN_CONTROLS.md`
+- `docs/livingworld/WORLD_SEEDING.md`
 - `docs/livingworld/ROADMAP.md`
 
 ## Next implementation slice
 
-1. Make the combined GitHub Actions build green.
-2. Add deterministic generator fixture tests.
-3. Add profile serialization and an in-memory cache.
-4. Detect eligible Playerbots after AI registration.
-5. Create and persist a profile exactly once.
-6. Add `.livingworld profile <name>` for inspection.
+1. Finish the green Phase 1 persistence PR.
+2. Validate database load/save behavior in a running server environment.
+3. Build the online population controller using the persisted minimum, target, maximum, and rate limits.
+4. Translate lifestyle profiles into weekly login schedules.
+5. Implement the fresh-realm seeding preset before developed-world presets.

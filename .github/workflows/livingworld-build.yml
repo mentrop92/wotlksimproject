@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - agent/livingworld-phase-0-1
+      - agent/livingworld-profile-persistence
   pull_request:
     branches:
       - Playerbot
@@ -24,14 +25,17 @@ jobs:
 
     steps:
       - name: Checkout Playerbot core fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Checkout Playerbots module fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: mentrop92/mod-playerbots
           ref: master
           path: modules/mod-playerbots
+          persist-credentials: false
 
       - name: Install build requirements
         run: |
@@ -51,8 +55,144 @@ jobs:
             make \
             mysql-server
 
+      - name: Test deterministic LivingWorld profiles
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldProfile.cpp \
+            modules/mod-livingworld/tests/LivingWorldProfileTests.cpp \
+            -o /tmp/livingworld-profile-tests
+          /tmp/livingworld-profile-tests
+
+      - name: Test LivingWorld population controller
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationController.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationControllerTests.cpp \
+            -o /tmp/livingworld-population-tests
+          /tmp/livingworld-population-tests
+
+      - name: Test LivingWorld schedule planner
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSchedulePlanner.cpp \
+            modules/mod-livingworld/tests/LivingWorldSchedulePlannerTests.cpp \
+            -o /tmp/livingworld-schedule-tests
+          /tmp/livingworld-schedule-tests
+
+      - name: Test LivingWorld population candidates
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCandidates.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationCandidatesTests.cpp \
+            -o /tmp/livingworld-candidate-tests
+          /tmp/livingworld-candidate-tests
+
+      - name: Test LivingWorld population plans
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCandidates.cpp \
+            modules/mod-livingworld/src/LivingWorldPopulationPlan.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationPlanTests.cpp \
+            -o /tmp/livingworld-plan-tests
+          /tmp/livingworld-plan-tests
+
+      - name: Test LivingWorld population curves
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCurve.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationCurveTests.cpp \
+            -o /tmp/livingworld-curve-tests
+          /tmp/livingworld-curve-tests
+
+      - name: Test LivingWorld dynamic session state
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSessionState.cpp \
+            modules/mod-livingworld/tests/LivingWorldSessionStateTests.cpp \
+            -o /tmp/livingworld-session-tests
+          /tmp/livingworld-session-tests
+
+      - name: Test LivingWorld server load governor
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldLoadGovernor.cpp \
+            modules/mod-livingworld/tests/LivingWorldLoadGovernorTests.cpp \
+            -o /tmp/livingworld-load-tests
+          /tmp/livingworld-load-tests
+
+      - name: Test unified LivingWorld population policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationController.cpp \
+            modules/mod-livingworld/src/LivingWorldPopulationCurve.cpp \
+            modules/mod-livingworld/src/LivingWorldLoadGovernor.cpp \
+            modules/mod-livingworld/src/LivingWorldPopulationPolicy.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationPolicyTests.cpp \
+            -o /tmp/livingworld-policy-tests
+          /tmp/livingworld-policy-tests
+
+      - name: Test LivingWorld target smoothing
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldTargetSmoother.cpp \
+            modules/mod-livingworld/tests/LivingWorldTargetSmootherTests.cpp \
+            -o /tmp/livingworld-target-smoother-tests
+          /tmp/livingworld-target-smoother-tests
+
+      - name: Test LivingWorld population cooldowns
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationCooldowns.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationCooldownsTests.cpp \
+            -o /tmp/livingworld-population-cooldown-tests
+          /tmp/livingworld-population-cooldown-tests
+
+      - name: Test LivingWorld population diagnostics
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationDiagnostics.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationDiagnosticsTests.cpp \
+            -o /tmp/livingworld-population-diagnostics-tests
+          /tmp/livingworld-population-diagnostics-tests
+
       - name: Configure ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         with:
           key: livingworld-ubuntu-24.04
           max-size: 2G
@@ -67,11 +207,39 @@ jobs:
             -DCMAKE_CXX_COMPILER=g++
 
       - name: Build AzerothCore with Playerbots and LivingWorld
+        id: livingworld-build
+        shell: bash
         run: |
-          cmake --build "${GITHUB_WORKSPACE}/build" --config Release --parallel 2
+          set +e
+          cmake --build "${GITHUB_WORKSPACE}/build" --config Release --parallel 2 > /tmp/livingworld-build.log 2>&1
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            {
+              echo "LivingWorld combined build failed. Compiler diagnostics:"
+              grep -nE "(^|[[:space:]])(fatal error:|error:|undefined reference|collect2: error)" /tmp/livingworld-build.log | tail -n 200 || true
+              echo
+              echo "Last 250 build-log lines:"
+              tail -n 250 /tmp/livingworld-build.log
+            } > /tmp/livingworld-diagnostics.txt
+            cat /tmp/livingworld-diagnostics.txt
+            exit "$status"
+          fi
+          tail -n 40 /tmp/livingworld-build.log
+
+      - name: Upload compiler diagnostics
+        if: failure() && steps.livingworld-build.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: livingworld-compiler-diagnostics
+          path: |
+            /tmp/livingworld-diagnostics.txt
+            /tmp/livingworld-build.log
+          retention-days: 3
+          if-no-files-found: error
 
       - name: Confirm LivingWorld module was configured
         run: |
           test -f modules/mod-livingworld/src/LW_loader.cpp
           test -f modules/mod-livingworld/data/sql/db-characters/livingworld_base.sql
+          test -f modules/mod-livingworld/data/sql/db-auth/base/livingworld_rbac.sql
           grep -R "Addmod_livingworldScripts" build modules -n
