@@ -36,7 +36,10 @@ int main()
 
     PopulationRoleCounts extreme{ 0, 0, 10000 };
     std::int16_t const tankBoost = PopulationRoleBalancePolicy::LoginPriorityAdjustment(PopulationRole::Tank, extreme);
-    assert(tankBoost == PopulationRoleBalancePolicy::MaximumPriorityAdjustment);
+    // Default tank target is 20% with a 5% tolerance. Zero tanks therefore
+    // produces a 15-point deficit: 50 base + (15 * 10) = 200.
+    assert(tankBoost == 200);
+    assert(tankBoost < PopulationRoleBalancePolicy::MaximumPriorityAdjustment);
 
     std::cout << "LivingWorld population role-balance tests passed.\n";
     return 0;
