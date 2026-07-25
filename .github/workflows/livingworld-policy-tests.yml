@@ -130,3 +130,16 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldRuntimeMetricsTests.cpp \
             -o /tmp/livingworld-runtime-metrics-tests
           /tmp/livingworld-runtime-metrics-tests
+
+      - name: Test runtime observation lifecycle
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldRuntimeObservability.cpp \
+            modules/mod-livingworld/src/LivingWorldRuntimeMetrics.cpp \
+            modules/mod-livingworld/src/LivingWorldRuntimeState.cpp \
+            modules/mod-livingworld/tests/LivingWorldRuntimeStateTests.cpp \
+            -o /tmp/livingworld-runtime-state-tests
+          /tmp/livingworld-runtime-state-tests
