@@ -62,3 +62,15 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldScheduleOccurrenceTests.cpp \
             -o /tmp/livingworld-schedule-occurrence-tests
           /tmp/livingworld-schedule-occurrence-tests
+
+      - name: Test bounded upcoming schedule calendars
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleOccurrence.cpp \
+            modules/mod-livingworld/src/LivingWorldScheduleCalendar.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleCalendarTests.cpp \
+            -o /tmp/livingworld-schedule-calendar-tests
+          /tmp/livingworld-schedule-calendar-tests
