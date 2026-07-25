@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - agent/livingworld-profile-persistence
+      - agent/livingworld-runtime-observability
   pull_request:
     branches:
       - Playerbot
@@ -107,3 +108,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldPopulationRoleBalanceTests.cpp \
             -o /tmp/livingworld-population-role-balance-tests
           /tmp/livingworld-population-role-balance-tests
+
+      - name: Test bounded runtime observability
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldRuntimeObservability.cpp \
+            modules/mod-livingworld/tests/LivingWorldRuntimeObservabilityTests.cpp \
+            -o /tmp/livingworld-runtime-observability-tests
+          /tmp/livingworld-runtime-observability-tests
