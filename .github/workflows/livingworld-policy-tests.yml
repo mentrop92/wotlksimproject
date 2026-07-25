@@ -85,3 +85,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldScheduleAdherenceTests.cpp \
             -o /tmp/livingworld-schedule-adherence-tests
           /tmp/livingworld-schedule-adherence-tests
+
+      - name: Test bounded faction-balance policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPopulationBalance.cpp \
+            modules/mod-livingworld/tests/LivingWorldPopulationBalanceTests.cpp \
+            -o /tmp/livingworld-population-balance-tests
+          /tmp/livingworld-population-balance-tests
