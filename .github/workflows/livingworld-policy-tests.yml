@@ -74,3 +74,14 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldScheduleCalendarTests.cpp \
             -o /tmp/livingworld-schedule-calendar-tests
           /tmp/livingworld-schedule-calendar-tests
+
+      - name: Test schedule adherence policy
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldScheduleAdherence.cpp \
+            modules/mod-livingworld/tests/LivingWorldScheduleAdherenceTests.cpp \
+            -o /tmp/livingworld-schedule-adherence-tests
+          /tmp/livingworld-schedule-adherence-tests
