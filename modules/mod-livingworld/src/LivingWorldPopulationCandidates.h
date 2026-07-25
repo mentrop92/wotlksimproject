@@ -21,6 +21,12 @@ namespace LivingWorld
         std::uint32_t minutesUntilSchedule = 0;
         std::uint32_t sessionOverrunMinutes = 0;
         std::uint8_t logoutReadiness = 0;
+
+        // Precomputed by ScheduleAdherence::Evaluate. The adherence layer
+        // guarantees a bounded adjustment in the range [-500, 500]. Keeping
+        // the value on the candidate avoids coupling the selector to history
+        // storage while still allowing missed sessions to influence ranking.
+        std::int16_t adherenceLoginPriority = 0;
     };
 
     struct RankedCandidate
