@@ -1,5 +1,6 @@
 #include "LivingWorldPermissions.h"
 #include "LivingWorldProfileManager.h"
+#include "LivingWorldRuntimeState.h"
 #include "LivingWorldSettings.h"
 
 #include "Chat.h"
@@ -47,6 +48,17 @@ namespace LivingWorld
             return "Unknown";
         }
 
+        char const* PlannedActionName(PlannedPopulationAction action)
+        {
+            switch (action)
+            {
+                case PlannedPopulationAction::Login: return "login";
+                case PlannedPopulationAction::Logout: return "logout";
+                case PlannedPopulationAction::None: return "none";
+            }
+            return "none";
+        }
+
         void PrintWorldStatus(ChatHandler* handler)
         {
             WorldSettings const& settings = sLivingWorldSettings.Get();
@@ -71,6 +83,35 @@ namespace LivingWorld
             handler->PSendSysMessage(
                 "Loaded profiles: {}. Population execution remains in dry-run planning mode.",
                 sLivingWorldProfiles.LoadedCount());
+
+            if (!sLivingWorldRuntimeState.HasSamples())
+            {
+                handler->SendSysMessage("Runtime observations: no samples recorded since startup.");
+                return;
+            }
+
+            RuntimeObservationSnapshot const& latest = sLivingWorldRuntimeState.Latest();
+            RuntimeMetricSummary const summary = sLivingWorldRuntimeState.Summary();
+            handler->PSendSysMessage(
+                "Latest dry-run plan: action {} | AI/humans {}/{} | configured/effective target {}/{} | ceiling {} | requested/selected/unmet {}/{}/{}",
+                PlannedActionName(latest.bounded.plannedAction),
+                latest.bounded.onlineAI,
+                latest.bounded.onlineHumans,
+                latest.bounded.configuredTarget,
+                latest.bounded.effectiveTarget,
+                latest.bounded.effectiveAICeiling,
+                latest.bounded.requestedOperations,
+                latest.bounded.selectedCandidates,
+                latest.unmetOperations);
+            handler->PSendSysMessage(
+                "Runtime window: {} samples | unhealthy {} | constrained {} | shortfall {} | emergency {} | average/peak update {}ms/{}ms",
+                summary.sampleCount,
+                summary.unhealthySamples,
+                summary.constrainedTargetSamples,
+                summary.candidateShortfallSamples,
+                summary.emergencyDrainSamples,
+                summary.averageUpdateTimeMs,
+                summary.peakUpdateTimeMs);
         }
     }
 
