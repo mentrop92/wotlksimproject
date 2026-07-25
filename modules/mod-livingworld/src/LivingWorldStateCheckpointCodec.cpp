@@ -2,7 +2,6 @@
 
 #include <array>
 #include <charconv>
-#include <cctype>
 #include <sstream>
 #include <string_view>
 
@@ -98,21 +97,27 @@ namespace LivingWorld
             return std::nullopt;
 
         std::array<std::string_view, 9> fields{};
-        std::size_t fieldIndex = 0;
         std::size_t start = 0;
-        while (fieldIndex < fields.size())
+        for (std::size_t fieldIndex = 0; fieldIndex < fields.size(); ++fieldIndex)
         {
             std::size_t const separator = encoded.find('|', start);
-            if (separator == std::string::npos)
+            bool const finalField = fieldIndex + 1 == fields.size();
+            if (finalField)
             {
-                fields[fieldIndex++] = std::string_view(encoded).substr(start);
-                break;
+                if (separator != std::string::npos)
+                    return std::nullopt;
+                fields[fieldIndex] = std::string_view(encoded).substr(start);
             }
-            fields[fieldIndex++] = std::string_view(encoded).substr(start, separator - start);
-            start = separator + 1;
+            else
+            {
+                if (separator == std::string::npos)
+                    return std::nullopt;
+                fields[fieldIndex] = std::string_view(encoded).substr(start, separator - start);
+                start = separator + 1;
+            }
         }
 
-        if (fieldIndex != fields.size() || encoded.find('|', start) != std::string::npos || fields[0] != "LWCP1")
+        if (fields[0] != "LWCP1")
             return std::nullopt;
 
         StateCheckpoint checkpoint;
