@@ -35,6 +35,7 @@ namespace LivingWorld
             score -= static_cast<std::int32_t>(std::min<std::uint32_t>(candidate.minutesUntilSchedule, 720));
             score += static_cast<std::int32_t>(std::clamp<std::int16_t>(candidate.adherenceLoginPriority, -500, 500));
             score += static_cast<std::int32_t>(std::clamp<std::int16_t>(candidate.balanceLoginPriority, -300, 300));
+            score += static_cast<std::int32_t>(std::clamp<std::int16_t>(candidate.roleBalanceLoginPriority, -250, 250));
             if (candidate.grouped)
                 score += 150;
             ranked.push_back({ candidate.characterGuid, score });
