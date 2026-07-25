@@ -32,6 +32,11 @@ namespace LivingWorld
         // The selector clamps it again so invalid external state cannot dominate
         // schedule, safety, or capacity policy.
         std::int16_t balanceLoginPriority = 0;
+
+        // Precomputed from the online tank/healer/damage mix. This adjustment is
+        // deliberately smaller than schedule priority and is clamped again at
+        // the selector boundary so role diversity cannot override safety.
+        std::int16_t roleBalanceLoginPriority = 0;
     };
 
     struct RankedCandidate
