@@ -33,6 +33,7 @@ namespace LivingWorld
 
             std::int32_t score = candidate.scheduleDue ? 1000 : 0;
             score -= static_cast<std::int32_t>(std::min<std::uint32_t>(candidate.minutesUntilSchedule, 720));
+            score += static_cast<std::int32_t>(std::clamp<std::int16_t>(candidate.adherenceLoginPriority, -500, 500));
             if (candidate.grouped)
                 score += 150;
             ranked.push_back({ candidate.characterGuid, score });
