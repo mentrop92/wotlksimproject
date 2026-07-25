@@ -1,6 +1,7 @@
 #include "LivingWorldPopulationController.h"
 #include "LivingWorldProfile.h"
 #include "LivingWorldProfileManager.h"
+#include "LivingWorldRuntimeState.h"
 #include "LivingWorldSettings.h"
 
 #include "Config.h"
@@ -48,6 +49,17 @@ namespace LivingWorld
             WorldSettings const& settings = sLivingWorldSettings.Get();
             return Config::Enabled && settings.simulationEnabled && settings.loginEnabled;
         }
+
+        PlannedPopulationAction ToObservedAction(PopulationAction action)
+        {
+            switch (action)
+            {
+                case PopulationAction::Login: return PlannedPopulationAction::Login;
+                case PopulationAction::Logout: return PlannedPopulationAction::Logout;
+                case PopulationAction::None: return PlannedPopulationAction::None;
+            }
+            return PlannedPopulationAction::None;
+        }
     }
 
     class LivingWorldWorldScript : public WorldScript
@@ -77,6 +89,7 @@ namespace LivingWorld
 
             sLivingWorldSettings.Load();
             sLivingWorldPopulation.Reset();
+            sLivingWorldRuntimeState.Reset();
             WorldSettings const& settings = sLivingWorldSettings.Get();
 
             BotProfile const sample = ProfileGenerator::Generate(1, 1, 1);
@@ -109,11 +122,27 @@ namespace LivingWorld
             // Human online counting remains intentionally disconnected until the
             // stable AzerothCore/Playerbots accounting API is validated. The
             // configured reserve is still enforced by passing zero observed humans.
+            WorldSettings const& settings = sLivingWorldSettings.Get();
             PopulationDecision const decision = sLivingWorldPopulation.Update(
                 diff,
                 static_cast<std::uint32_t>(sLivingWorldProfiles.LoadedCount()),
                 0,
-                sLivingWorldSettings.Get());
+                settings);
+
+            RuntimeObservationInput observation;
+            observation.onlineAI = decision.currentOnline;
+            observation.onlineHumans = decision.currentHumanOnline;
+            observation.configuredTarget = settings.targetOnline;
+            observation.effectiveTarget = decision.effectiveTarget;
+            observation.effectiveAICeiling = decision.effectiveAICeiling;
+            observation.plannedAction = ToObservedAction(decision.action);
+            observation.requestedOperations = decision.requestedCount;
+            // Candidate collection remains disconnected from runtime until stable
+            // Playerbots enumeration APIs are validated. Reporting zero selected
+            // candidates makes that limitation explicit rather than fabricating work.
+            observation.selectedCandidates = 0;
+            observation.averageUpdateTimeMs = diff;
+            sLivingWorldRuntimeState.Record(observation);
 
             if (decision.requestedCount == 0)
                 return;
