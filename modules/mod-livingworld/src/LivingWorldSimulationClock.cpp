@@ -44,17 +44,46 @@ namespace LivingWorld
         _fractionalCredit += scaled;
         std::uint64_t elapsedMinutes = _fractionalCredit / MillisecondsPerMinute;
         _fractionalCredit %= MillisecondsPerMinute;
+        return ApplyStep(elapsedMinutes);
+    }
 
-        std::uint64_t remaining = SimulationClockLimits::MaximumSimulationMinute - _simulationMinute;
-        if (elapsedMinutes > remaining)
+    std::uint64_t SimulationClock::StepMinutes(std::uint32_t minutes)
+    {
+        if (minutes == 0 || minutes > SimulationClockLimits::MaximumStepMinutes)
+            return 0;
+        return ApplyStep(minutes);
+    }
+
+    std::uint64_t SimulationClock::StepHours(std::uint32_t hours)
+    {
+        if (hours == 0 || hours > SimulationClockLimits::MaximumStepHours)
+            return 0;
+        return ApplyStep(static_cast<std::uint64_t>(hours) * 60ULL);
+    }
+
+    std::uint64_t SimulationClock::StepDays(std::uint32_t days)
+    {
+        if (days == 0 || days > SimulationClockLimits::MaximumStepDays)
+            return 0;
+        return ApplyStep(static_cast<std::uint64_t>(days) * 1440ULL);
+    }
+
+    std::uint64_t SimulationClock::ApplyStep(std::uint64_t minutes)
+    {
+        if (minutes == 0 || _simulationMinute >= SimulationClockLimits::MaximumSimulationMinute)
+            return 0;
+
+        std::uint64_t const remaining = SimulationClockLimits::MaximumSimulationMinute - _simulationMinute;
+        std::uint64_t const applied = std::min(minutes, remaining);
+        _simulationMinute += applied;
+
+        if (applied < minutes)
         {
-            elapsedMinutes = remaining;
             _fractionalCredit = 0;
             _clamped = true;
         }
 
-        _simulationMinute += elapsedMinutes;
-        return elapsedMinutes;
+        return applied;
     }
 
     SimulationClockSnapshot SimulationClock::GetSnapshot() const
