@@ -155,3 +155,15 @@ jobs:
             modules/mod-livingworld/tests/LivingWorldStateCheckpointTests.cpp \
             -o /tmp/livingworld-state-checkpoint-tests
           /tmp/livingworld-state-checkpoint-tests
+
+      - name: Test strict state checkpoint codec
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldStateCheckpoint.cpp \
+            modules/mod-livingworld/src/LivingWorldStateCheckpointCodec.cpp \
+            modules/mod-livingworld/tests/LivingWorldStateCheckpointCodecTests.cpp \
+            -o /tmp/livingworld-state-checkpoint-codec-tests
+          /tmp/livingworld-state-checkpoint-codec-tests
