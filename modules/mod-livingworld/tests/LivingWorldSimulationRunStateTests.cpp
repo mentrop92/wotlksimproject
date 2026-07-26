@@ -66,6 +66,21 @@ int main()
     assert(!zeroStep.Advance(0));
     assert(zeroStep.GetSnapshot().currentMinute == plan.startMinute);
 
+    // A caller cannot bypass the planner's iteration ceiling by advancing in
+    // smaller increments than the planned tick size.
+    SimulationRunState exhausted = SimulationRunState::Create(plan);
+    assert(exhausted.Start());
+    assert(exhausted.Advance(1));
+    assert(exhausted.Advance(1));
+    assert(exhausted.Advance(1));
+    assert(exhausted.IsTerminal());
+    assert(exhausted.GetSnapshot().status == SimulationRunStatus::Failed);
+    assert(exhausted.GetSnapshot().stopReason == SimulationStopReason::SafetyLimit);
+    assert(exhausted.GetSnapshot().currentMinute == 103);
+    assert(exhausted.GetSnapshot().completedIterations == plan.iterationCount);
+    assert(exhausted.GetSnapshot().clamped);
+    assert(!exhausted.Advance(1));
+
     std::cout << "LivingWorld simulation run-state tests passed.\n";
     return 0;
 }
