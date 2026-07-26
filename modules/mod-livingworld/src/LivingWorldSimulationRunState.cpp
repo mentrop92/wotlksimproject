@@ -37,17 +37,31 @@ namespace LivingWorld
         if (_snapshot.status != SimulationRunStatus::Running || simulatedMinutes == 0)
             return false;
 
+        if (_snapshot.completedIterations >= _snapshot.plannedIterations)
+        {
+            _snapshot.status = SimulationRunStatus::Failed;
+            _snapshot.stopReason = SimulationStopReason::SafetyLimit;
+            _snapshot.clamped = true;
+            RefreshProgress();
+            return false;
+        }
+
         std::uint64_t const remaining = _snapshot.endMinute - _snapshot.currentMinute;
         std::uint64_t const applied = std::min<std::uint64_t>(simulatedMinutes, remaining);
         _snapshot.currentMinute += applied;
-
-        if (_snapshot.completedIterations < _snapshot.plannedIterations)
-            ++_snapshot.completedIterations;
-        else
-            _snapshot.clamped = true;
+        ++_snapshot.completedIterations;
 
         RefreshProgress();
         CompleteIfFinished();
+
+        if (_snapshot.status == SimulationRunStatus::Running &&
+            _snapshot.completedIterations >= _snapshot.plannedIterations)
+        {
+            _snapshot.status = SimulationRunStatus::Failed;
+            _snapshot.stopReason = SimulationStopReason::SafetyLimit;
+            _snapshot.clamped = true;
+        }
+
         return applied > 0;
     }
 
