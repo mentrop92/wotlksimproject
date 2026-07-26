@@ -1,0 +1,40 @@
+name: LivingWorld simulation run state
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/livingworld-simulation-run-state
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-run-state-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-state-tests:
+    name: Bounded simulation run state
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test simulation run state
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSimulationClock.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationRunPlan.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationRunState.cpp \
+            modules/mod-livingworld/tests/LivingWorldSimulationRunStateTests.cpp \
+            -o /tmp/livingworld-simulation-run-state-tests
+          /tmp/livingworld-simulation-run-state-tests
