@@ -1,0 +1,43 @@
+name: LivingWorld simulation observation history
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/livingworld-simulation-observation-history
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-observation-history-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observation-history-tests:
+    name: Bounded simulation observation history
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test simulation observation history
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSimulationClock.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationRunPlan.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationRunState.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationRunEvents.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationRunObservations.cpp \
+            modules/mod-livingworld/src/LivingWorldSimulationObservationHistory.cpp \
+            modules/mod-livingworld/tests/LivingWorldSimulationObservationHistoryTests.cpp \
+            -o /tmp/livingworld-simulation-observation-history-tests
+          /tmp/livingworld-simulation-observation-history-tests
