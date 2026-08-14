@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 
 namespace LivingWorld
 {
@@ -54,9 +55,33 @@ bool LivingWorldMemorySocialGraph::IsValidRelation(LivingWorldSocialEdge const& 
         return false;
     if (edge.affinityBasisPoints < MinimumSignedBasisPoints || edge.affinityBasisPoints > MaximumSignedBasisPoints)
         return false;
-    if (edge.trustBasisPoints > MaximumUnsignedBasisPoints || edge.familiarityBasisPoints > MaximumUnsignedBasisPoints)
+    if (edge.trustBasisPoints > MaximumUnsignedBasisPoints ||
+        edge.familiarityBasisPoints > MaximumUnsignedBasisPoints ||
+        edge.rivalryBasisPoints > MaximumUnsignedBasisPoints)
         return false;
     return true;
+}
+
+bool LivingWorldMemorySocialGraph::IsValidSocialEvent(LivingWorldSocialEvent const& event)
+{
+    if (event.actorId == 0 || event.otherId == 0 || event.actorId == event.otherId)
+        return false;
+
+    auto validDelta = [](std::int16_t delta)
+    {
+        return delta >= -MaximumSocialEventDeltaBasisPoints && delta <= MaximumSocialEventDeltaBasisPoints;
+    };
+
+    if (!validDelta(event.affinityDeltaBasisPoints) ||
+        !validDelta(event.trustDeltaBasisPoints) ||
+        !validDelta(event.familiarityDeltaBasisPoints) ||
+        !validDelta(event.rivalryDeltaBasisPoints))
+        return false;
+
+    return event.affinityDeltaBasisPoints != 0 ||
+        event.trustDeltaBasisPoints != 0 ||
+        event.familiarityDeltaBasisPoints != 0 ||
+        event.rivalryDeltaBasisPoints != 0;
 }
 
 bool LivingWorldMemorySocialGraph::AddMemory(LivingWorldMemoryRecord record)
@@ -114,6 +139,51 @@ bool LivingWorldMemorySocialGraph::UpsertRelation(LivingWorldSocialEdge edge)
     if (relations_.size() > MaximumRelations)
         relations_.erase(relations_.begin());
     return true;
+}
+
+bool LivingWorldMemorySocialGraph::ApplySocialEvent(LivingWorldSocialEvent const& event)
+{
+    if (!IsValidSocialEvent(event))
+        return false;
+
+    LivingWorldSocialEdge updated;
+    auto existing = FindRelation(event.actorId, event.otherId);
+    if (existing.has_value())
+    {
+        if (event.simulationMinute < existing->lastInteractionSimulationMinute)
+            return false;
+        updated = *existing;
+    }
+    else
+    {
+        updated.actorId = event.actorId;
+        updated.otherId = event.otherId;
+    }
+
+    auto clampSigned = [](std::int32_t value)
+    {
+        value = std::max<std::int32_t>(MinimumSignedBasisPoints, value);
+        value = std::min<std::int32_t>(MaximumSignedBasisPoints, value);
+        return static_cast<std::int16_t>(value);
+    };
+    auto clampUnsigned = [](std::int32_t value)
+    {
+        value = std::max<std::int32_t>(0, value);
+        value = std::min<std::int32_t>(MaximumUnsignedBasisPoints, value);
+        return static_cast<std::uint16_t>(value);
+    };
+
+    updated.affinityBasisPoints = clampSigned(
+        static_cast<std::int32_t>(updated.affinityBasisPoints) + event.affinityDeltaBasisPoints);
+    updated.trustBasisPoints = clampUnsigned(
+        static_cast<std::int32_t>(updated.trustBasisPoints) + event.trustDeltaBasisPoints);
+    updated.familiarityBasisPoints = clampUnsigned(
+        static_cast<std::int32_t>(updated.familiarityBasisPoints) + event.familiarityDeltaBasisPoints);
+    updated.rivalryBasisPoints = clampUnsigned(
+        static_cast<std::int32_t>(updated.rivalryBasisPoints) + event.rivalryDeltaBasisPoints);
+    updated.lastInteractionSimulationMinute = event.simulationMinute;
+
+    return UpsertRelation(updated);
 }
 
 std::vector<LivingWorldMemoryRecord> const& LivingWorldMemorySocialGraph::Memories() const
