@@ -1,0 +1,34 @@
+name: LivingWorld goal model
+
+on:
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-goal-model-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  goal-model-tests:
+    name: Bounded goal model
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test goal model
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldGoalModel.cpp \
+            modules/mod-livingworld/tests/LivingWorldGoalModelTests.cpp \
+            -o /tmp/livingworld-goal-model-tests
+          /tmp/livingworld-goal-model-tests
