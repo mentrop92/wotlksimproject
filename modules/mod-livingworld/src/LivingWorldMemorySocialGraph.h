@@ -38,7 +38,19 @@ struct LivingWorldSocialEdge
     std::int16_t affinityBasisPoints = 0;
     std::uint16_t trustBasisPoints = 0;
     std::uint16_t familiarityBasisPoints = 0;
+    std::uint16_t rivalryBasisPoints = 0;
     std::uint64_t lastInteractionSimulationMinute = 0;
+};
+
+struct LivingWorldSocialEvent
+{
+    std::uint64_t actorId = 0;
+    std::uint64_t otherId = 0;
+    std::uint64_t simulationMinute = 0;
+    std::int16_t affinityDeltaBasisPoints = 0;
+    std::int16_t trustDeltaBasisPoints = 0;
+    std::int16_t familiarityDeltaBasisPoints = 0;
+    std::int16_t rivalryDeltaBasisPoints = 0;
 };
 
 class LivingWorldMemorySocialGraph
@@ -53,10 +65,12 @@ public:
     static constexpr std::uint16_t MaximumDecayBasisPointsPerDay = 1000;
     static constexpr std::int16_t MinimumSignedBasisPoints = -10000;
     static constexpr std::int16_t MaximumSignedBasisPoints = 10000;
+    static constexpr std::int16_t MaximumSocialEventDeltaBasisPoints = 1000;
     static constexpr std::uint64_t SimulationMinutesPerDay = 1440;
 
     bool AddMemory(LivingWorldMemoryRecord record);
     bool UpsertRelation(LivingWorldSocialEdge edge);
+    bool ApplySocialEvent(LivingWorldSocialEvent const& event);
 
     std::vector<LivingWorldMemoryRecord> const& Memories() const;
     std::vector<LivingWorldSocialEdge> const& Relations() const;
@@ -74,6 +88,7 @@ private:
     static bool IsValidMemoryKind(MemoryKind kind);
     static bool IsValidMemory(LivingWorldMemoryRecord const& record);
     static bool IsValidRelation(LivingWorldSocialEdge const& edge);
+    static bool IsValidSocialEvent(LivingWorldSocialEvent const& event);
 
     std::vector<LivingWorldMemoryRecord> memories_;
     std::vector<LivingWorldSocialEdge> relations_;
