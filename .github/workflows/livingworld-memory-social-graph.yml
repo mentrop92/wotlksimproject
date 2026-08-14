@@ -1,0 +1,38 @@
+name: LivingWorld memory social graph
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/livingworld-memory-social-foundation
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-memory-social-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  memory-social-tests:
+    name: Bounded memory/social graph
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test memory/social graph
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldMemorySocialGraph.cpp \
+            modules/mod-livingworld/tests/LivingWorldMemorySocialGraphTests.cpp \
+            -o /tmp/livingworld-memory-social-graph-tests
+          /tmp/livingworld-memory-social-graph-tests
