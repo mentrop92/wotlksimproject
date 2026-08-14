@@ -1,0 +1,38 @@
+name: LivingWorld simulation observation serialization
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/livingworld-observation-summary-serialization
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-observation-serialization-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  serialization-tests:
+    name: Bounded observation serialization
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test observation serialization
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldSimulationObservationSerialization.cpp \
+            modules/mod-livingworld/tests/LivingWorldSimulationObservationSerializationTests.cpp \
+            -o /tmp/livingworld-simulation-observation-serialization-tests
+          /tmp/livingworld-simulation-observation-serialization-tests
