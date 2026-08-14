@@ -103,7 +103,7 @@
 ## Phase 4 — Memory and Social Graph
 
 - Record meaningful events rather than every action.
-- Add memory importance, valence, decay, and protected memories.
+- [x] Add memory importance, valence, decay, and protected memories.
 - Update affinity, trust, familiarity, and rivalry from shared events.
 - Allow relationships to affect invitations, assistance, trade, and guild choices.
 
