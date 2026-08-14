@@ -21,17 +21,9 @@ on:
       - 'src/tools/**/*'
 
 permissions:
-  actions: write
   contents: read
 
 concurrency:
-  # One concurrency group per workflow + ref.
-  #
-  # - PRs use `refs/pull/<PR_NUMBER>/merge`, so new commits cancel older
-  #   in-progress runs for the same PR.
-  # - When a PR is merged, a push to the target branch starts a new group,
-  #   canceling any still-running PR CI.
-  # - Branch pushes are isolated by ref.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -49,10 +41,9 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.compiler.CC }}-nopch-modules
     if: github.repository == 'mod-playerbots/azerothcore-wotlk' && !github.event.pull_request.draft
     steps:
-      - uses: actions/checkout@v4
-        # This script installs a general list of modules to compile with
-        # azerothcore. This is useful for ensuring that module compilation
-        # functionality works.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Checkout modules
         run: bash -x ./apps/ci/ci-install-modules.sh
       - uses: ./.github/actions/linux-build

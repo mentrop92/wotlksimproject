@@ -6,30 +6,41 @@ on:
   pull_request:
     branches: [ "Playerbot", "test-staging" ]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   windows-build:
+    # Upstream dependency bootstrap currently pins an OpenSSL Chocolatey package
+    # whose vendor payload is unavailable. Keep this inherited workflow
+    # non-executable in this fork until upstream repairs that bootstrap; the
+    # LivingWorld fork is gated by its dedicated Ubuntu combined build instead.
+    if: github.repository == 'mod-playerbots/azerothcore-wotlk' && !github.event.pull_request.draft
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
     env:
       BOOST_ROOT: C:\local\boost_1_87_0
     steps:
       - name: Checkout AzerothCore
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Checkout Playerbot Module
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: mod-playerbots/mod-playerbots
           ref: ${{ github.ref_name == 'Playerbot' && 'master' || 'test-staging' }}
           path: modules/mod-playerbots
+          persist-credentials: false
 
       - name: Move repo to short path
         shell: bash
@@ -38,7 +49,7 @@ jobs:
           cp -r . C:/ac/
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2.13
+        uses: hendrikmuhs/ccache-action@c92f40bee50034e84c763e33b317c77adaa81c92 # v1.2.13
 
       - name: Configure OS
         shell: bash
