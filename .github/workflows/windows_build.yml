@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "Playerbot", "test-staging" ]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -22,14 +25,17 @@ jobs:
       BOOST_ROOT: C:\local\boost_1_87_0
     steps:
       - name: Checkout AzerothCore
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Checkout Playerbot Module
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: mod-playerbots/mod-playerbots
           ref: ${{ github.ref_name == 'Playerbot' && 'master' || 'test-staging' }}
           path: modules/mod-playerbots
+          persist-credentials: false
 
       - name: Move repo to short path
         shell: bash
@@ -38,7 +44,7 @@ jobs:
           cp -r . C:/ac/
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2.13
+        uses: hendrikmuhs/ccache-action@c92f40bee50034e84c763e33b317c77adaa81c92 # v1.2.13
 
       - name: Configure OS
         shell: bash
