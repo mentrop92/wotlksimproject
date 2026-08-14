@@ -1,5 +1,4 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+# This starter workflow is for a CMake project running on multiple platforms.
 name: ubuntu-build
 
 on:
@@ -7,6 +6,9 @@ on:
     branches: [ "Playerbot", "test-staging" ]
   pull_request:
     branches: [ "Playerbot", "test-staging" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -31,7 +33,9 @@ jobs:
 
     steps:
       - name: Checkout AzerothCore
-        uses: actions/checkout@v3
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set reusable strings
         id: strings
@@ -40,12 +44,12 @@ jobs:
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Checkout Playerbot Module
-        uses: actions/checkout@v3
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: mod-playerbots/mod-playerbots
-          # Map AC branch → PB branch
           ref: ${{ github.ref_name == 'Playerbot' && 'master' || 'test-staging' }}
           path: modules/mod-playerbots
+          persist-credentials: false
 
       - name: Install Requirements
         run: |
