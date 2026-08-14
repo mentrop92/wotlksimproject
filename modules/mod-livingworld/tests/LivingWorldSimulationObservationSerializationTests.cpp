@@ -46,7 +46,7 @@ int main()
     assert(!SimulationObservationSerializer::DeserializeSummary(std::string(1025, 'x')).has_value());
 
     SimulationCorrelationDiagnostic diagnostic;
-    diagnostic.checkpointCorrelationId = "checkpoint-A_01:test";
+    diagnostic.checkpointCorrelationId = "checkpoint-A_01.test";
     diagnostic.observationCount = 3;
     diagnostic.firstSimulationMinute = 100;
     diagnostic.latestSimulationMinute = 220;
@@ -66,7 +66,10 @@ int main()
 
     diagnostic.checkpointCorrelationId = "unsafe|identifier";
     assert(!SimulationObservationSerializer::SerializeDiagnostic(diagnostic).has_value());
-    diagnostic.checkpointCorrelationId = std::string(97, 'a');
+    diagnostic.checkpointCorrelationId = "unsafe:identifier";
+    assert(!SimulationObservationSerializer::SerializeDiagnostic(diagnostic).has_value());
+    diagnostic.checkpointCorrelationId = std::string(
+        SimulationRunObservationLimits::MaximumCheckpointCorrelationLength + 1, 'a');
     assert(!SimulationObservationSerializer::SerializeDiagnostic(diagnostic).has_value());
     assert(!SimulationObservationSerializer::DeserializeDiagnostic("LWOD1|unsafe id|1|0|0|0|0|0").has_value());
 
