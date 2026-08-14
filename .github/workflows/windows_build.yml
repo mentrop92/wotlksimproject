@@ -18,7 +18,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        # AzerothCore's current dependency bootstrap installs the VS2022 native
+        # desktop workload. Pin the runner generation so the required VS2022
+        # product is present instead of following windows-latest to VS2026.
+        os: [windows-2022]
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
     env:
