@@ -105,7 +105,7 @@
 - Record meaningful events rather than every action.
 - [x] Add memory importance, valence, decay, and protected memories.
 - [x] Update affinity, trust, familiarity, and rivalry from shared events.
-- Allow relationships to affect invitations, assistance, trade, and guild choices.
+- [x] Allow relationships to affect invitations, assistance, trade, and guild choices.
 
 ## Phase 5 — Goals and Organizations
 
