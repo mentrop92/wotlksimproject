@@ -12,7 +12,7 @@ class SimulationObservationSerializer
 {
 public:
     static constexpr std::size_t MaxSerializedBytes = 1024;
-    static constexpr std::size_t MaxCorrelationIdBytes = 96;
+    static constexpr std::size_t MaxCorrelationIdBytes = SimulationRunObservationLimits::MaximumCheckpointCorrelationLength;
 
     static std::optional<std::string> SerializeSummary(SimulationObservationSummary const& value);
     static std::optional<SimulationObservationSummary> DeserializeSummary(std::string const& payload);
