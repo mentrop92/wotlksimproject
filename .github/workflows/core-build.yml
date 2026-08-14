@@ -37,6 +37,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Checkout Playerbot Module
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: mod-playerbots/mod-playerbots
+          ref: ${{ github.ref_name == 'Playerbot' && 'master' || 'test-staging' }}
+          path: modules/mod-playerbots
+          persist-credentials: false
+
       - name: Set reusable strings
         id: strings
         shell: bash
