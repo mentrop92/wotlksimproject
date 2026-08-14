@@ -62,7 +62,7 @@ bool SimulationObservationSerializer::IsSafeCorrelationId(std::string const& val
 
     for (unsigned char c : value)
     {
-        if (!(std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == ':'))
+        if (!(std::isalnum(c) || c == '-' || c == '_' || c == '.'))
             return false;
     }
     return true;
