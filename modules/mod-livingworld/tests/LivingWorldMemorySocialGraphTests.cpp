@@ -74,6 +74,7 @@ int main()
     edge.affinityBasisPoints = 2500;
     edge.trustBasisPoints = 4000;
     edge.familiarityBasisPoints = 3000;
+    edge.rivalryBasisPoints = 500;
     edge.lastInteractionSimulationMinute = 100;
     assert(graph.UpsertRelation(edge));
     assert(graph.Relations().size() == 1);
@@ -81,6 +82,7 @@ int main()
     auto found = graph.FindRelation(1, 2);
     assert(found.has_value());
     assert(found->affinityBasisPoints == 2500);
+    assert(found->rivalryBasisPoints == 500);
 
     edge.affinityBasisPoints = 3000;
     edge.lastInteractionSimulationMinute = 120;
@@ -95,6 +97,9 @@ int main()
     edge.affinityBasisPoints = 10001;
     assert(!graph.UpsertRelation(edge));
     edge.affinityBasisPoints = 0;
+    edge.rivalryBasisPoints = 10001;
+    assert(!graph.UpsertRelation(edge));
+    edge.rivalryBasisPoints = 0;
     edge.otherId = 1;
     assert(!graph.UpsertRelation(edge));
 
@@ -102,6 +107,99 @@ int main()
     assert(graph.Memories().empty());
     assert(graph.Relations().empty());
 
+    LivingWorldSocialEvent socialEvent;
+    socialEvent.actorId = 7;
+    socialEvent.otherId = 8;
+    socialEvent.simulationMinute = 10;
+    socialEvent.affinityDeltaBasisPoints = 400;
+    socialEvent.trustDeltaBasisPoints = 300;
+    socialEvent.familiarityDeltaBasisPoints = 200;
+    socialEvent.rivalryDeltaBasisPoints = 100;
+    assert(graph.ApplySocialEvent(socialEvent));
+    assert(graph.Memories().empty());
+
+    found = graph.FindRelation(7, 8);
+    assert(found.has_value());
+    assert(found->affinityBasisPoints == 400);
+    assert(found->trustBasisPoints == 300);
+    assert(found->familiarityBasisPoints == 200);
+    assert(found->rivalryBasisPoints == 100);
+    assert(found->lastInteractionSimulationMinute == 10);
+
+    socialEvent.simulationMinute = 11;
+    socialEvent.affinityDeltaBasisPoints = -150;
+    socialEvent.trustDeltaBasisPoints = -100;
+    socialEvent.familiarityDeltaBasisPoints = 250;
+    socialEvent.rivalryDeltaBasisPoints = 300;
+    assert(graph.ApplySocialEvent(socialEvent));
+    found = graph.FindRelation(7, 8);
+    assert(found.has_value());
+    assert(found->affinityBasisPoints == 250);
+    assert(found->trustBasisPoints == 200);
+    assert(found->familiarityBasisPoints == 450);
+    assert(found->rivalryBasisPoints == 400);
+
+    socialEvent.simulationMinute = 9;
+    assert(!graph.ApplySocialEvent(socialEvent));
+    socialEvent.simulationMinute = 12;
+    socialEvent.affinityDeltaBasisPoints = LivingWorldMemorySocialGraph::MaximumSocialEventDeltaBasisPoints + 1;
+    assert(!graph.ApplySocialEvent(socialEvent));
+    socialEvent.affinityDeltaBasisPoints = 0;
+    socialEvent.trustDeltaBasisPoints = 0;
+    socialEvent.familiarityDeltaBasisPoints = 0;
+    socialEvent.rivalryDeltaBasisPoints = 0;
+    assert(!graph.ApplySocialEvent(socialEvent));
+    socialEvent.affinityDeltaBasisPoints = 1;
+    socialEvent.otherId = socialEvent.actorId;
+    assert(!graph.ApplySocialEvent(socialEvent));
+
+    graph.Reset();
+    LivingWorldSocialEdge saturated;
+    saturated.actorId = 20;
+    saturated.otherId = 21;
+    saturated.affinityBasisPoints = 9900;
+    saturated.trustBasisPoints = 9900;
+    saturated.familiarityBasisPoints = 50;
+    saturated.rivalryBasisPoints = 9900;
+    saturated.lastInteractionSimulationMinute = 20;
+    assert(graph.UpsertRelation(saturated));
+
+    LivingWorldSocialEvent clampEvent;
+    clampEvent.actorId = 20;
+    clampEvent.otherId = 21;
+    clampEvent.simulationMinute = 21;
+    clampEvent.affinityDeltaBasisPoints = 1000;
+    clampEvent.trustDeltaBasisPoints = 1000;
+    clampEvent.familiarityDeltaBasisPoints = -1000;
+    clampEvent.rivalryDeltaBasisPoints = 1000;
+    assert(graph.ApplySocialEvent(clampEvent));
+    found = graph.FindRelation(20, 21);
+    assert(found.has_value());
+    assert(found->affinityBasisPoints == LivingWorldMemorySocialGraph::MaximumSignedBasisPoints);
+    assert(found->trustBasisPoints == LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints);
+    assert(found->familiarityBasisPoints == 0);
+    assert(found->rivalryBasisPoints == LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints);
+
+    clampEvent.simulationMinute = 22;
+    clampEvent.affinityDeltaBasisPoints = -1000;
+    clampEvent.trustDeltaBasisPoints = -1000;
+    clampEvent.familiarityDeltaBasisPoints = 1000;
+    clampEvent.rivalryDeltaBasisPoints = -1000;
+    saturated.affinityBasisPoints = -9900;
+    saturated.trustBasisPoints = 50;
+    saturated.familiarityBasisPoints = 9900;
+    saturated.rivalryBasisPoints = 50;
+    saturated.lastInteractionSimulationMinute = 21;
+    assert(graph.UpsertRelation(saturated));
+    assert(graph.ApplySocialEvent(clampEvent));
+    found = graph.FindRelation(20, 21);
+    assert(found.has_value());
+    assert(found->affinityBasisPoints == LivingWorldMemorySocialGraph::MinimumSignedBasisPoints);
+    assert(found->trustBasisPoints == 0);
+    assert(found->familiarityBasisPoints == LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints);
+    assert(found->rivalryBasisPoints == 0);
+
+    graph.Reset();
     for (std::size_t i = 0; i < LivingWorldMemorySocialGraph::MaximumMemories + 5; ++i)
     {
         LivingWorldMemoryRecord item;
@@ -184,6 +282,6 @@ int main()
     assert(graph.FindRelation(100, 1000) == std::nullopt);
     assert(graph.FindRelation(100, 1003).has_value());
 
-    std::cout << "LivingWorld bounded memory/social graph lifecycle tests passed.\n";
+    std::cout << "LivingWorld bounded memory/social graph and relationship event tests passed.\n";
     return 0;
 }
