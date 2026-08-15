@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <set>
+#include <utility>
 #include <vector>
 
 namespace LivingWorld
@@ -37,7 +38,8 @@ std::optional<LivingWorldPartySelectionResult> LivingWorldPartySelection::Select
     std::vector<LivingWorldSocialEdge> const& relations,
     PartySelectionPolicy const& policy)
 {
-    if (initiatorId == 0 || candidates.size() > MaximumCandidates)
+    if (initiatorId == 0 || candidates.size() > MaximumCandidates ||
+        relations.size() > LivingWorldMemorySocialGraph::MaximumRelations)
         return std::nullopt;
     if (policy.desiredPartySize < MinimumPartySize || policy.desiredPartySize > MaximumPartySize)
         return std::nullopt;
@@ -46,6 +48,20 @@ std::optional<LivingWorldPartySelectionResult> LivingWorldPartySelection::Select
         policy.minimumTrustBasisPoints > LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints ||
         policy.minimumFamiliarityBasisPoints > LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints)
         return std::nullopt;
+
+    std::set<std::pair<std::uint64_t, std::uint64_t>> relationKeys;
+    for (LivingWorldSocialEdge const& edge : relations)
+    {
+        if (edge.actorId == 0 || edge.otherId == 0 || edge.actorId == edge.otherId ||
+            edge.affinityBasisPoints < LivingWorldMemorySocialGraph::MinimumSignedBasisPoints ||
+            edge.affinityBasisPoints > LivingWorldMemorySocialGraph::MaximumSignedBasisPoints ||
+            edge.trustBasisPoints > LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints ||
+            edge.familiarityBasisPoints > LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints ||
+            edge.rivalryBasisPoints > LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints)
+            return std::nullopt;
+        if (!relationKeys.insert({edge.actorId, edge.otherId}).second)
+            return std::nullopt;
+    }
 
     std::set<std::uint64_t> seen;
     std::vector<RankedCandidate> ranked;
