@@ -1,0 +1,35 @@
+name: LivingWorld goal serialization
+
+on:
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-goal-serialization-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  goal-serialization-tests:
+    name: Bounded goal serialization
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test goal serialization
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldGoalModel.cpp \
+            modules/mod-livingworld/src/LivingWorldGoalSerialization.cpp \
+            modules/mod-livingworld/tests/LivingWorldGoalSerializationTests.cpp \
+            -o /tmp/livingworld-goal-serialization-tests
+          /tmp/livingworld-goal-serialization-tests
