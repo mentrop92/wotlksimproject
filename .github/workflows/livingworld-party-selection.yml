@@ -1,0 +1,34 @@
+name: LivingWorld party selection
+
+on:
+  pull_request:
+    branches:
+      - Playerbot
+
+permissions:
+  contents: read
+
+concurrency:
+  group: livingworld-party-selection-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  party-selection-tests:
+    name: Bounded party selection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test party selection
+        run: |
+          g++ \
+            -std=c++17 \
+            -O2 \
+            -I modules/mod-livingworld/src \
+            modules/mod-livingworld/src/LivingWorldPartySelection.cpp \
+            modules/mod-livingworld/tests/LivingWorldPartySelectionTests.cpp \
+            -o /tmp/livingworld-party-selection-tests
+          /tmp/livingworld-party-selection-tests
