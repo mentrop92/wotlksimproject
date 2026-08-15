@@ -94,6 +94,23 @@ int main()
         tooMany.push_back(Candidate(100 + i));
     assert(!LivingWorldPartySelection::Select(1, tooMany, relations, policy).has_value());
 
+    auto duplicateRelations = relations;
+    duplicateRelations.push_back(relations.front());
+    assert(!LivingWorldPartySelection::Select(1, candidates, duplicateRelations, policy).has_value());
+
+    auto invalidRelations = relations;
+    invalidRelations.front().trustBasisPoints = LivingWorldMemorySocialGraph::MaximumUnsignedBasisPoints + 1;
+    assert(!LivingWorldPartySelection::Select(1, candidates, invalidRelations, policy).has_value());
+
+    invalidRelations = relations;
+    invalidRelations.front().actorId = invalidRelations.front().otherId;
+    assert(!LivingWorldPartySelection::Select(1, candidates, invalidRelations, policy).has_value());
+
+    std::vector<LivingWorldSocialEdge> tooManyRelations;
+    for (std::size_t i = 0; i <= LivingWorldMemorySocialGraph::MaximumRelations; ++i)
+        tooManyRelations.push_back(Relation(1000 + i, 2000 + i, 0, 0, 0, 0));
+    assert(!LivingWorldPartySelection::Select(1, candidates, tooManyRelations, policy).has_value());
+
     std::cout << "LivingWorld bounded party selection tests passed.\n";
     return 0;
 }
