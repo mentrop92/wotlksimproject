@@ -38,6 +38,17 @@ LivingWorld.Population.AutoScale = 1
 LivingWorld.Population.LoginRatePerMinute = 15
 LivingWorld.Population.LogoutRatePerMinute = 20
 
+# Let the population controller steer Playerbots' random-bot population.
+# 0 = dry run: decisions are planned, logged, and visible in .livingworld
+#     population, but no bot is logged in or out.
+# 1 = execute: LivingWorld sets RandomPlayerbotMgr's bot_count target and
+#     clears the "add" event of selected bots so Playerbots logs them out
+#     through its own checks. Requires AiPlayerbot.RandomBotAutologin = 1.
+#     Targets are clamped to AiPlayerbot.MinRandomBots/MaxRandomBots, so set
+#     those to bracket LivingWorld's minimum and maximum online population.
+# Default: 0
+LivingWorld.Population.Execute = 0
+
 # Maximum number of non-protected short-term memories retained per bot.
 # Memory pruning will be implemented after the identity foundation is stable.
 # Default: 50

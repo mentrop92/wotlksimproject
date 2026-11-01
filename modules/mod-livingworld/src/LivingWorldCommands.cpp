@@ -4,6 +4,7 @@
 #include "LivingWorldSettings.h"
 
 #include "Chat.h"
+#include "Config.h"
 #include "CommandScript.h"
 #include "Player.h"
 #include "PlayerbotMgr.h"
@@ -81,8 +82,11 @@ namespace LivingWorld
                 SafetyLimits::MaximumLoginRatePerMinute,
                 SafetyLimits::MaximumLogoutRatePerMinute);
             handler->PSendSysMessage(
-                "Loaded profiles: {}. Population execution remains in dry-run planning mode.",
-                sLivingWorldProfiles.LoadedCount());
+                "Loaded profiles: {}. Population execution: {}.",
+                sLivingWorldProfiles.LoadedCount(),
+                sConfigMgr->GetOption<bool>("LivingWorld.Population.Execute", false)
+                    ? "steering Playerbots random-bot population"
+                    : "dry-run planning (LivingWorld.Population.Execute = 0)");
 
             if (!sLivingWorldRuntimeState.HasSamples())
             {

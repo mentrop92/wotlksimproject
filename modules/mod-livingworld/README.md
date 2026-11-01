@@ -40,6 +40,9 @@ Important defaults:
 - `LivingWorld.ProfileHumans = 0`
 - population minimum/target/maximum: `50/250/500`
 - population login/logout rates: `15/20` per minute
+- `LivingWorld.Population.Execute = 0` (dry run; set to `1` to let the controller steer Playerbots)
+
+With execution enabled, LivingWorld never logs bots in or out itself. It sets Playerbots' `bot_count` target and clears the `add` event of selected bots, so `RandomPlayerbotMgr` performs every login and logout through its own checks. Grouped, fighting, instanced, and flying bots are never selected. Targets are clamped to `AiPlayerbot.MinRandomBots`/`MaxRandomBots`, whose defaults (500/500) leave nothing to steer, so widen that range to bracket LivingWorld's minimum and maximum online population.
 
 Persisted values in `lw_world_settings` override runtime defaults after the initial settings row is created. Human-controlled characters are not profiled by default.
 
@@ -60,7 +63,7 @@ Persisted values in `lw_world_settings` override runtime defaults after the init
 .livingworld profile
 ```
 
-The current commands persist and enforce the control policy. Automatic rate-limited bot login/logout begins in the scheduling and population-controller phase.
+The current commands persist and enforce the control policy. `.livingworld population` reports whether execution is live or dry-run. Human players are counted from real world sessions and reduce the AI ceiling beyond the configured reserve.
 
 ## Documentation
 

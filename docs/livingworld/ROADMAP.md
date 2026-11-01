@@ -78,11 +78,12 @@
 - [x] Reserve online capacity for human players in the planner.
 - [x] Add protected-activity and session-aware candidate ranking.
 - [x] Add time-of-day and weekday population target curves.
-- [ ] Connect verified human online counts from a stable core API.
+- [x] Connect verified human online counts from a stable core API (`WorldSessionMgr` sessions; Playerbot sessions are never registered there).
 - [ ] Add server-load safeguards and adaptive target reduction.
 - [ ] Allow soft pause to drain naturally through selected session endings.
 - [ ] Allow hard pause to perform rate-limited forced Playerbot logout.
-- [ ] Validate Playerbots login/logout control APIs before enabling execution.
+- [x] Validate Playerbots login/logout control APIs and connect execution behind `LivingWorld.Population.Execute` (steers `RandomPlayerbotMgr` `bot_count` and per-bot `add` events instead of bypassing the manager).
+- [ ] Verify population execution against a running worldserver before enabling it by default.
 - [ ] Add accelerated simulation commands for days and months.
 
 ## Phase 3 — World Seeding and Synthetic History
